@@ -3,6 +3,7 @@
 import { db } from "@/db/drizzle";
 import { threadTable } from "@/db/schema";
 import { generateThreadTitle } from "@/lib/langchain";
+import { createClient } from "@/lib/supabase/server";
 import { Message, MessageRole } from "@/lib/thread-store";
 import { eq } from "drizzle-orm";
 
@@ -10,11 +11,16 @@ import { eq } from "drizzle-orm";
  * Create a new empty thread in the database
  */
 export async function createThread() {
+  const supabase = await createClient();
+  const { data: authUserData } = await supabase.auth.getUser();
+  const userId = authUserData.user?.id ?? "Guest";
+
   const [thread] = await db
     .insert(threadTable)
     .values({
       title: "New Thread",
       messages: [],
+      user: userId,
     })
     .returning();
 
@@ -168,9 +174,14 @@ export async function clearThreadMessages(threadId: string) {
  * Get all threads
  */
 export async function getAllThreads() {
+  const supabase = await createClient();
+  const { data: authUserData } = await supabase.auth.getUser();
+  const userId = authUserData.user?.id ?? "Guest";
+
   const threads = await db
     .select()
     .from(threadTable)
+    .where(eq(threadTable.user, userId))
     .orderBy(threadTable.updatedAt);
   return threads;
 }
