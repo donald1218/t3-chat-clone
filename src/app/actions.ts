@@ -2,6 +2,8 @@
 
 import { z } from "zod";
 import { getLLMResponse } from "../lib/langchain";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 // Define a schema for input validation
 const FormSchema = z.string().min(1, "Input is required");
@@ -41,4 +43,12 @@ export async function processInput(input: string) {
       error: error instanceof Error ? error.message : String(error),
     };
   }
+}
+
+export async function signOut() {
+  const supabase = await createClient();
+
+  await supabase.auth.signOut();
+
+  redirect("/login");
 }

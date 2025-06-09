@@ -8,6 +8,9 @@ import ThreadManager from "@/components/ThreadManager";
 import { useCurrentThread } from "@/lib/hooks/use-thread-store";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { Separator } from "@/components/ui/separator";
+import Profile from "./profile";
 
 export default function Home() {
   // Also use new thread store with TanStack Query
@@ -64,8 +67,12 @@ export default function Home() {
   return (
     <div className="flex h-screen">
       {/* Sidebar for threads */}
-      <div className="hidden md:flex w-64 flex-col bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 p-4 overflow-y-auto">
+      <div className="relative hidden md:flex w-64 flex-col bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 p-4 overflow-y-auto">
         <ThreadManager />
+
+        <div className="absolute bottom-0 left-0 right-0 py-2 px-1">
+          <Profile />
+        </div>
       </div>
 
       {/* Main content area */}
