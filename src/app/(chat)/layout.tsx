@@ -20,7 +20,6 @@ export default async function ChatLayout({
 
         <div className="absolute bottom-0 left-0 right-0 py-2 px-2 flex place-content-between">
           <Profile />
-          <NewThreadButton />
         </div>
       </div>
 
