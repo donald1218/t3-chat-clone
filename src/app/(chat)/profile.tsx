@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import { PopoverContent } from "@radix-ui/react-popover";
 import { LogOutIcon } from "lucide-react";
-import { signOut } from "./actions";
+import { signOut } from "../actions";
 import { useCurrentUserName } from "@/lib/hooks/use-current-user-name";
 
 export default function Profile() {

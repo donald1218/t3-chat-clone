@@ -1,6 +1,7 @@
 "use client";
 
-import { processInput } from "../../actions";
+import { useEffect, useState } from "react";
+import { processInput } from "@/app/actions";
 import InputForm from "../../input-form";
 import { FormValues } from "../../input-form.schema";
 import ThreadDisplay from "@/components/ThreadDisplay";
@@ -11,19 +12,23 @@ interface ThreadProps {
 }
 
 export default function Thread(props: ThreadProps) {
-  const { data: threadData } = useThread(props.threadId);
+  const { data: threadData, isLoading } = useThread(props.threadId);
+  const [submitting, setSubmitting] = useState(false);
   const addMessage = useAddMessage();
 
-  // Handle form submission with server action
-  async function onSubmit(data: FormValues) {
-    try {
-      // Add user message to thread (using both stores for now)
-      await addMessage.mutateAsync({
-        threadId: props.threadId,
-        role: "user",
-        content: data.inputField,
+  useEffect(() => {
+    if (threadData?.messages?.length === 1) {
+      getReply({
+        inputField: threadData.messages[0].content || "",
       });
+    }
+  });
 
+  async function getReply(data: FormValues) {
+    if (submitting) return; // Prevent multiple submissions
+    setSubmitting(true); // Set submission state
+
+    try {
       // Use messages from the new store with TanStack Query
       const existingMessageContent = threadData?.messages
         ?.map((msg) => msg.content)
@@ -69,7 +74,38 @@ export default function Thread(props: ThreadProps) {
         role: "assistant",
         content: "An unexpected error occurred",
       });
+    } finally {
+      setSubmitting(false); // Reset submission state
     }
+  }
+
+  // Handle form submission with server action
+  async function onSubmit(data: FormValues) {
+    try {
+      // Add user message to thread (using both stores for now)
+      await addMessage.mutateAsync({
+        threadId: props.threadId,
+        role: "user",
+        content: data.inputField,
+      });
+    } catch (error: unknown) {
+      console.error("Form submission error:", error);
+      await addMessage.mutateAsync({
+        threadId: props.threadId,
+        role: "assistant",
+        content: "An unexpected error occurred",
+      });
+    }
+
+    await getReply(data);
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
+      </div>
+    );
   }
 
   return (
@@ -80,7 +116,7 @@ export default function Thread(props: ThreadProps) {
       </div>
 
       <div className="sticky bottom-4 w-full max-w-3xl mx-auto">
-        <InputForm onSubmit={onSubmit} />
+        <InputForm onSubmit={onSubmit} externalSubmitting={submitting} />
       </div>
     </>
   );

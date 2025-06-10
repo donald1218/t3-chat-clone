@@ -1,3 +1,4 @@
+import { getThread } from "@/app/thread-actions";
 import Thread from "./thread";
 
 interface ThreadPageParams {

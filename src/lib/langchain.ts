@@ -3,19 +3,19 @@ import { ChatGoogle } from "@langchain/google-gauth";
 
 // Initialize the OpenAI model with your API key
 // This should be stored in an environment variable
-export const chatModel = new ChatOpenAI({
-  openAIApiKey: process.env.OPENAI_API_KEY,
-  modelName: "google/gemma-3n-e4b-it:free", // You can change this to the model you want to use
-  temperature: 0.7,
-  configuration: {
-    baseURL: "https://openrouter.ai/api/v1",
-  },
-});
+// export const chatModel = new ChatOpenAI({
+//   openAIApiKey: process.env.OPENAI_API_KEY,
+//   modelName: "google/gemma-3n-e4b-it:free", // You can change this to the model you want to use
+//   temperature: 0.7,
+//   configuration: {
+//     baseURL: "https://openrouter.ai/api/v1",
+//   },
+// });
 
 // Initialize the Google Generative AI model with your API key
-// export const chatModel = new ChatGoogle({
-//   model: "gemma-3n-e4b-it",
-// });
+export const chatModel = new ChatGoogle({
+  model: "gemma-3n-e4b-it",
+});
 
 // Helper function to stream responses from the LLM
 export async function streamingLLMResponse(input: string) {

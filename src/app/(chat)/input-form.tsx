@@ -6,18 +6,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formSchema, FormValues } from "./input-form.schema";
 
 interface InputFormProps {
   onSubmit: (input: FormValues) => Promise<void>;
+  externalSubmitting?: boolean; // Optional prop to control external submission
 }
 
 export default function InputForm(props: InputFormProps) {
@@ -84,9 +78,11 @@ export default function InputForm(props: InputFormProps) {
                     type="submit"
                     size="icon"
                     className="rounded-full h-8 w-8"
-                    disabled={form.formState.isSubmitting}
+                    disabled={
+                      form.formState.isSubmitting || props.externalSubmitting
+                    }
                   >
-                    {form.formState.isSubmitting ? (
+                    {form.formState.isSubmitting || props.externalSubmitting ? (
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
                     ) : (
                       <ArrowUp className="h-4 w-4" />

@@ -10,15 +10,25 @@ import {
   useThreads,
 } from "@/lib/hooks/use-thread-queries";
 import { Thread } from "@/db/schema";
-import { Message } from "@/lib/thread-store";
 import { useEffect } from "react";
-import { TrashIcon } from "lucide-react";
-import { deleteThread } from "@/app/thread-actions";
+import { ReceiptPoundSterling, TrashIcon } from "lucide-react";
 import Link from "next/link";
+import {
+  redirect,
+  useRouter,
+  useSelectedLayoutSegments,
+} from "next/navigation";
 
 export default function ThreadManager() {
-  const threadId = useLocalThreadStore((state) => state.threadId);
-  const setThreadId = useLocalThreadStore((state) => state.setThreadId);
+  const router = useRouter();
+
+  const segment = useSelectedLayoutSegments();
+  let currentThreadId = undefined;
+  if (segment.length > 0 && segment[0] === "thread") {
+    // If we're in a thread context, we don't show the thread manager
+    currentThreadId = segment[1];
+  }
+
   const initializeThread = useLocalThreadStore(
     (state) => state.initializeThread
   );
@@ -39,20 +49,11 @@ export default function ThreadManager() {
   const handleCreateNewThread = async () => {
     try {
       const newThread = await createThreadMutation.mutateAsync();
-      if (newThread) {
-        // Store new thread ID in localStorage and update the store
-        localStorage.setItem("current-thread-id", newThread.id);
-        setThreadId(newThread.id);
-      }
+
+      router.push(`/thread/${newThread.id}`);
     } catch (error) {
       console.error("Failed to create new thread:", error);
     }
-  };
-
-  // Function to switch to an existing thread
-  const switchToThread = (id: string) => {
-    localStorage.setItem("current-thread-id", id);
-    setThreadId(id);
   };
 
   // Format date for display
@@ -118,12 +119,12 @@ export default function ThreadManager() {
               key={thread.id}
               href={`/thread/${thread.id}`}
               shallow
+              prefetch
               className={`group flex items-center w-full min-w-0 h-auto py-2 px-4 rounded-lg ${
-                threadId === thread.id
+                currentThreadId === thread.id
                   ? "bg-primary text-primary-foreground"
                   : ""
               }`}
-              onClick={() => switchToThread(thread.id)}
             >
               <div className="flex flex-col items-start grow min-w-0">
                 <span className="text-sm font-medium max-w-full truncate">
@@ -139,17 +140,16 @@ export default function ThreadManager() {
                   size="sm"
                   variant="ghost"
                   className={`h-6 w-6 p-0 ${
-                    threadId === thread.id ? "" : "hover:bg-red-200"
+                    currentThreadId === thread.id ? "" : "hover:bg-red-200"
                   }`}
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent button click from triggering thread switch
+                    e.nativeEvent.preventDefault();
 
                     deleteThreadMutation.mutate(thread.id, {
                       onSuccess: () => {
-                        // Clear localStorage if the current thread is deleted
-                        if (threadId === thread.id) {
-                          localStorage.removeItem("current-thread-id");
-                          setThreadId("");
+                        if (currentThreadId === thread.id) {
+                          router.push("/"); // Ensure we don't stay on the deleted thread
                         }
                       },
                     });

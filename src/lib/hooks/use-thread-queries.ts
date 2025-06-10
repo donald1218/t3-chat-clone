@@ -45,6 +45,7 @@ export function useCreateThread() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: threadKeys.lists(),
     mutationFn: createThread,
     // When the mutation succeeds, invalidate the threads list query
     onSuccess: (newThread) => {
@@ -57,6 +58,7 @@ export function useCreateThread() {
 export function useDeleteThread() {
   const queryClient = useQueryClient();
   return useMutation({
+    mutationKey: threadKeys.lists(),
     mutationFn: (id: string) => deleteThread(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({
