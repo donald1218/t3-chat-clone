@@ -4,10 +4,17 @@ import { useLocalThreadStore } from "@/lib/hooks/use-thread-store";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { IconPlus, IconRefresh } from "@tabler/icons-react";
-import { useCreateThread, useThreads } from "@/lib/hooks/use-thread-queries";
+import {
+  useCreateThread,
+  useDeleteThread,
+  useThreads,
+} from "@/lib/hooks/use-thread-queries";
 import { Thread } from "@/db/schema";
 import { Message } from "@/lib/thread-store";
 import { useEffect } from "react";
+import { TrashIcon } from "lucide-react";
+import { deleteThread } from "@/app/thread-actions";
+import Link from "next/link";
 
 export default function ThreadManager() {
   const threadId = useLocalThreadStore((state) => state.threadId);
@@ -26,6 +33,7 @@ export default function ThreadManager() {
 
   // Use mutation hook for creating threads
   const createThreadMutation = useCreateThread();
+  const deleteThreadMutation = useDeleteThread();
 
   // Function to create a new thread
   const handleCreateNewThread = async () => {
@@ -109,20 +117,45 @@ export default function ThreadManager() {
             <Button
               key={thread.id}
               variant={threadId === thread.id ? "default" : "ghost"}
-              className={`w-full justify-start text-left h-auto py-2 ${
+              className={`group flex items-center w-full min-w-0 h-auto py-2 ${
                 threadId === thread.id
                   ? "bg-primary text-primary-foreground"
                   : ""
               }`}
               onClick={() => switchToThread(thread.id)}
             >
-              <div className="flex flex-col items-start w-full">
-                <span className="text-sm font-medium w-full truncate">
+              <div className="flex flex-col items-start grow min-w-0">
+                <span className="text-sm font-medium max-w-full truncate">
                   {getThreadDisplayTitle(thread)}
                 </span>
                 <span className="text-xs opacity-70">
                   {formatDate(thread.updatedAt)}
                 </span>
+              </div>
+
+              <div className="hidden group-hover:block">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className={`h-6 w-6 p-0 ${
+                    threadId === thread.id ? "" : "hover:bg-red-200"
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent button click from triggering thread switch
+
+                    deleteThreadMutation.mutate(thread.id, {
+                      onSuccess: () => {
+                        // Clear localStorage if the current thread is deleted
+                        if (threadId === thread.id) {
+                          localStorage.removeItem("current-thread-id");
+                          setThreadId("");
+                        }
+                      },
+                    });
+                  }}
+                >
+                  <TrashIcon className="h-4 w-4 text-red-500" />
+                </Button>
               </div>
             </Button>
           ))}

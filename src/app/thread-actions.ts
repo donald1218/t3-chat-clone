@@ -27,6 +27,15 @@ export async function createThread() {
   return thread;
 }
 
+export async function deleteThread(id: string) {
+  const [deletedThread] = await db
+    .delete(threadTable)
+    .where(eq(threadTable.id, id))
+    .returning();
+
+  return deletedThread;
+}
+
 /**
  * Get a thread by its ID
  */

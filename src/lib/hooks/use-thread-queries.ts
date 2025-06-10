@@ -8,6 +8,7 @@ import {
   removeMessageFromThread,
   clearThreadMessages,
   updateThreadTitle,
+  deleteThread,
 } from "@/app/thread-actions";
 import { Message, MessageRole } from "@/lib/thread-store";
 import { Thread } from "@/db/schema";
@@ -49,6 +50,18 @@ export function useCreateThread() {
     onSuccess: (newThread) => {
       queryClient.invalidateQueries({ queryKey: threadKeys.lists() });
       return newThread;
+    },
+  });
+}
+
+export function useDeleteThread() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteThread(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({
+        queryKey: threadKeys.lists(),
+      });
     },
   });
 }
