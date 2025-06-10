@@ -1,6 +1,5 @@
 "use client";
 
-import { useLocalThreadStore } from "@/lib/hooks/use-thread-store";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { IconPlus, IconRefresh } from "@tabler/icons-react";
@@ -10,14 +9,9 @@ import {
   useThreads,
 } from "@/lib/hooks/use-thread-queries";
 import { Thread } from "@/db/schema";
-import { useEffect } from "react";
-import { ReceiptPoundSterling, TrashIcon } from "lucide-react";
+import { TrashIcon } from "lucide-react";
 import Link from "next/link";
-import {
-  redirect,
-  useRouter,
-  useSelectedLayoutSegments,
-} from "next/navigation";
+import { useRouter, useSelectedLayoutSegments } from "next/navigation";
 
 export default function ThreadManager() {
   const router = useRouter();
@@ -28,15 +22,6 @@ export default function ThreadManager() {
     // If we're in a thread context, we don't show the thread manager
     currentThreadId = segment[1];
   }
-
-  const initializeThread = useLocalThreadStore(
-    (state) => state.initializeThread
-  );
-
-  // Initialize thread on component mount
-  useEffect(() => {
-    initializeThread();
-  }, [initializeThread]);
 
   // Use TanStack Query to fetch threads
   const { data: threads = [], isLoading, refetch } = useThreads();

@@ -6,11 +6,12 @@ import { generateThreadTitle } from "@/lib/langchain";
 import { createClient } from "@/lib/supabase/server";
 import { Message, MessageRole } from "@/lib/thread-store";
 import { eq } from "drizzle-orm";
+import { redirect } from "next/navigation";
 
 /**
  * Create a new empty thread in the database
  */
-export async function createThread() {
+export async function createThread(options?: { redirectAfterCreate: boolean }) {
   const supabase = await createClient();
   const { data: authUserData } = await supabase.auth.getUser();
   const userId = authUserData.user?.id ?? "Guest";
@@ -23,6 +24,13 @@ export async function createThread() {
       user: userId,
     })
     .returning();
+
+  if (options?.redirectAfterCreate) {
+    // Redirect to the new thread page
+    const threadUrl = `/thread/${thread.id}`;
+
+    return redirect(threadUrl);
+  }
 
   return thread;
 }

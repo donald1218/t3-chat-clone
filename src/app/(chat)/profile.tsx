@@ -12,7 +12,7 @@ export default function Profile() {
   const userName = useCurrentUserName();
 
   return (
-    <div className="flex items-center justify-end">
+    <div className="flex items-center justify-start">
       <Popover>
         <PopoverTrigger>
           <CurrentUserAvatar />
