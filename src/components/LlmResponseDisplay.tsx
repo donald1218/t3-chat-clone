@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ReactMarkdown from "react-markdown";
+import { MarkdownHooks } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypePrettyCode from "rehype-pretty-code";
+
+import "./markdown.css";
 
 interface LlmResponseDisplayProps {
   response: string | null;
@@ -32,8 +35,9 @@ export default function LlmResponseDisplay({
 
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <ReactMarkdown
+      <MarkdownHooks
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[() => rehypePrettyCode({ theme: "one-dark-pro" })]}
         components={{
           // Custom styling for code blocks
           code({ children, className, ...props }) {
@@ -41,17 +45,14 @@ export default function LlmResponseDisplay({
             const isInline = !match;
 
             return isInline ? (
-              <code
-                className="bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded"
-                {...props}
-              >
-                {children}
-              </code>
+              <div className="rounded-lg">
+                <code className="px-1 py-0.5 rounded-lg" {...props}>
+                  {children}
+                </code>
+              </div>
             ) : (
-              <div className="relative">
-                <pre
-                  className={`${className} rounded-md p-4 bg-gray-900 dark:bg-gray-800 overflow-x-auto`}
-                >
+              <div className="relative rounded-lg">
+                <pre className={`${className} rounded-lg p-4 overflow-x-auto`}>
                   <code className={className} {...props}>
                     {children}
                   </code>
@@ -181,7 +182,7 @@ export default function LlmResponseDisplay({
         }}
       >
         {formattedResponse}
-      </ReactMarkdown>
+      </MarkdownHooks>
     </div>
   );
 }
