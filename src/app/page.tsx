@@ -65,43 +65,31 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen">
-      {/* Sidebar for threads */}
-      <div className="relative hidden md:flex w-64 flex-col bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 p-4 overflow-y-auto">
-        <ThreadManager />
-
-        <div className="absolute bottom-0 left-0 right-0 py-2 px-1">
-          <Profile />
+    <div className="flex-1 flex flex-col h-screen p-4">
+      <main className="flex flex-col w-full min-h-screen gap-[32px] items-center justify-center">
+        {/* Thread display showing conversation history */}
+        <div className="w-full pt-8 overflow-y-auto flex-1 relative max-h-[calc(100vh-120px)]">
+          {messages && messages.length > 0 && (
+            <div className="absolute top-2 right-2 flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  clearThread();
+                }}
+                className="text-xs"
+              >
+                Clear Thread
+              </Button>
+            </div>
+          )}
+          <ThreadDisplay className="pb-4" />
         </div>
-      </div>
 
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col h-screen p-4">
-        <main className="flex flex-col w-full min-h-screen gap-[32px] items-center justify-center">
-          {/* Thread display showing conversation history */}
-          <div className="w-full pt-8 overflow-y-auto flex-1 relative max-h-[calc(100vh-120px)]">
-            {messages && messages.length > 0 && (
-              <div className="absolute top-2 right-2 flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    clearThread();
-                  }}
-                  className="text-xs"
-                >
-                  Clear Thread
-                </Button>
-              </div>
-            )}
-            <ThreadDisplay className="pb-4" />
-          </div>
-
-          <div className="sticky bottom-4 w-full max-w-3xl mx-auto">
-            <InputForm onSubmit={onSubmit} />
-          </div>
-        </main>
-      </div>
+        <div className="sticky bottom-4 w-full max-w-3xl mx-auto">
+          <InputForm onSubmit={onSubmit} />
+        </div>
+      </main>
     </div>
   );
 }

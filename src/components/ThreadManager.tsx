@@ -114,10 +114,11 @@ export default function ThreadManager() {
       ) : (
         <div className="space-y-2 mt-2">
           {threads.map((thread) => (
-            <Button
+            <Link
               key={thread.id}
-              variant={threadId === thread.id ? "default" : "ghost"}
-              className={`group flex items-center w-full min-w-0 h-auto py-2 ${
+              href={`/thread/${thread.id}`}
+              shallow
+              className={`group flex items-center w-full min-w-0 h-auto py-2 px-4 rounded-lg ${
                 threadId === thread.id
                   ? "bg-primary text-primary-foreground"
                   : ""
@@ -157,7 +158,7 @@ export default function ThreadManager() {
                   <TrashIcon className="h-4 w-4 text-red-500" />
                 </Button>
               </div>
-            </Button>
+            </Link>
           ))}
         </div>
       )}

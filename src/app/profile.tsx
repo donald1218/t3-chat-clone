@@ -1,3 +1,5 @@
+"use client";
+
 import { CurrentUserAvatar } from "@/components/current-user-avatar";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverTrigger } from "@/components/ui/popover";

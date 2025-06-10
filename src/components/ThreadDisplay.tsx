@@ -1,18 +1,19 @@
 "use client";
 
 import { type Message } from "@/lib/thread-store";
-import { useCurrentThread } from "@/lib/hooks/use-thread-store";
 import LlmResponseDisplay from "./LlmResponseDisplay";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef } from "react";
 
 interface ThreadDisplayProps {
   className?: string;
+  messages?: Message[];
 }
 
-export default function ThreadDisplay({ className }: ThreadDisplayProps) {
-  // Get messages from thread store using TanStack Query
-  const { messages, isLoading, threadId } = useCurrentThread();
+export default function ThreadDisplay({
+  className,
+  messages,
+}: ThreadDisplayProps) {
   // Create a ref for the messages container
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -21,31 +22,8 @@ export default function ThreadDisplay({ className }: ThreadDisplayProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Handle loading state
-  if (isLoading) {
-    return (
-      <div
-        className={cn(
-          "flex flex-col items-center justify-center py-12",
-          className
-        )}
-      >
-        <div className="text-center text-gray-500 dark:text-gray-400">
-          <h2 className="text-xl font-semibold mb-2">
-            Loading conversation...
-          </h2>
-          <div className="flex space-x-2 justify-center">
-            <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-            <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-            <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // If no thread or no messages, show empty state
-  if (!threadId || messages.length === 0) {
+  if (messages === undefined || messages.length === 0) {
     return (
       <div
         className={cn(
