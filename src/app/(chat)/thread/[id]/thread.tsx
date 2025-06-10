@@ -18,8 +18,13 @@ export default function Thread(props: ThreadProps) {
 
   useEffect(() => {
     if (threadData?.messages?.length === 1) {
+      // Get the model if it was stored in metadata, or use default
+      const storedModel =
+        threadData.messages[0].metadata?.model || "gemma-3n-e4b-it";
+
       getReply({
         inputField: threadData.messages[0].content || "",
+        model: storedModel,
       });
     }
   });
@@ -34,10 +39,11 @@ export default function Thread(props: ThreadProps) {
         ?.map((msg) => msg.content)
         .join("\n");
 
-      // Call server action
-      const result = await processInput(
-        existingMessageContent + "\n" + data.inputField
-      );
+      // Call server action with both input and selected model
+      const result = await processInput({
+        inputField: existingMessageContent + "\n" + data.inputField,
+        model: data.model || "gemma-3n-e4b-it",
+      });
 
       if (result.success) {
         // Get the LLM response text
@@ -54,11 +60,7 @@ export default function Thread(props: ThreadProps) {
         });
       } else {
         // Handle error case
-        const errorMsg =
-          result.error ||
-          (result.errors
-            ? Object.values(result.errors).join(", ")
-            : "Unknown error");
+        const errorMsg = result.error || "Unknown error";
 
         // Add error message to thread (using both stores for now)
         await addMessage.mutateAsync({
@@ -87,6 +89,9 @@ export default function Thread(props: ThreadProps) {
         threadId: props.threadId,
         role: "user",
         content: data.inputField,
+        metadata: {
+          model: data.model,
+        },
       });
     } catch (error: unknown) {
       console.error("Form submission error:", error);

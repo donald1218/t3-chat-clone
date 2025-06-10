@@ -1,6 +1,6 @@
 "use client";
 
-import { type Message } from "@/lib/thread-store";
+import { type Message } from "@/lib/types";
 import LlmResponseDisplay from "./LlmResponseDisplay";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef } from "react";

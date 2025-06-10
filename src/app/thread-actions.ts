@@ -4,7 +4,7 @@ import { db } from "@/db/drizzle";
 import { threadTable } from "@/db/schema";
 import { generateThreadTitle } from "@/lib/langchain";
 import { createClient } from "@/lib/supabase/server";
-import { Message, MessageRole } from "@/lib/thread-store";
+import { Message, MessageRole } from "@/lib/types";
 import { desc, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
@@ -62,7 +62,8 @@ export async function getThread(id: string) {
 export async function addMessageToThread(
   threadId: string,
   role: MessageRole,
-  content: string
+  content: string,
+  metadata?: { [key: string]: any }
 ) {
   const [thread] = await db
     .select()
@@ -79,6 +80,7 @@ export async function addMessageToThread(
     role,
     content,
     timestamp: Date.now(),
+    metadata,
   };
 
   const updatedMessages = [...messages, newMessage];

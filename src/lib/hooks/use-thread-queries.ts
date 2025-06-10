@@ -15,7 +15,7 @@ import {
   updateThreadTitle,
   deleteThread,
 } from "@/app/thread-actions";
-import { Message, MessageRole } from "@/lib/thread-store";
+import { Message, MessageRole } from "@/lib/types";
 import { Thread } from "@/db/schema";
 
 // Query keys for better type safety and organization
@@ -98,12 +98,19 @@ export function useAddMessage() {
       threadId,
       role,
       content,
+      metadata,
     }: {
       threadId: string;
       role: MessageRole;
       content: string;
+      metadata?: { [key: string]: any };
     }) => {
-      const result = await addMessageToThread(threadId, role, content);
+      const result = await addMessageToThread(
+        threadId,
+        role,
+        content,
+        metadata
+      );
 
       return result;
     },
@@ -117,7 +124,7 @@ export function useAddMessage() {
       });
     },
     // Optimistic update for better UX
-    onMutate: async ({ threadId, role, content }) => {
+    onMutate: async ({ threadId, role, content, metadata }) => {
       // Cancel outgoing refetches for the thread
       await queryClient.cancelQueries({
         queryKey: threadKeys.detail(threadId),

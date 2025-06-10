@@ -1,38 +1,24 @@
 "use server";
 
-import { z } from "zod";
 import { getLLMResponse } from "../lib/langchain";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
-// Define a schema for input validation
-const FormSchema = z.string().min(1, "Input is required");
-
 // This is our server action that will process the form data
-export async function processInput(input: string) {
-  // Validate the input
-  const validatedInput = FormSchema.safeParse(input);
-
-  // If validation fails, return an error
-  if (!validatedInput.success) {
-    return {
-      success: false,
-      errors: validatedInput.error.flatten().fieldErrors,
-    };
-  }
-
+export async function processInput(input: {
+  inputField: string;
+  model: string;
+}) {
   try {
-    // Get the validated input
-    const input = validatedInput.data;
-
     // Send the input to LLM using LangChain
-    const llmResponse = await getLLMResponse(input);
+    const llmResponse = await getLLMResponse(input.inputField, input.model);
 
     // Return the LLM response
     return {
       success: true,
       message: "LLM processing complete",
-      data: input,
+      data: input.inputField,
+      modelUsed: input.model,
       llmResponse: llmResponse.text || llmResponse.content,
     };
   } catch (error) {

@@ -8,6 +8,22 @@ import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { formSchema, FormValues } from "./input-form.schema";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  getAvailableModelsGroupedByProvider,
+  modelProviderToName,
+} from "@/lib/models";
+import { SelectLabel } from "@radix-ui/react-select";
+import { useAtom } from "jotai/react";
+import { modelSelectionAtom } from "@/lib/store/model-selection";
+import { useEffect } from "react";
 
 interface InputFormProps {
   onSubmit: (input: FormValues) => Promise<void>;
@@ -15,19 +31,43 @@ interface InputFormProps {
 }
 
 export default function InputForm(props: InputFormProps) {
+  const [selectedModel, setSelectedModel] = useAtom(modelSelectionAtom);
+
   // Initialize the form with validation
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       inputField: "",
+      model: selectedModel, // Default model
     },
   });
 
+  useEffect(() => {
+    // Set the default model from the atom when the component mounts
+    form.setValue("model", selectedModel);
+  }, [selectedModel, form]);
+
+  const onModelChange = (value: string) => {
+    if (!value) {
+      console.warn("No model selected");
+      return;
+    }
+
+    // Update the model in the form state
+    form.setValue("model", value);
+
+    setSelectedModel(value); // Update the atom state
+  };
+
   const onSubmit = async (data: FormValues) => {
+    const modelValue = form.getValues("model");
     form.resetField("inputField");
 
     try {
-      await props.onSubmit(data);
+      await props.onSubmit({
+        inputField: data.inputField,
+        model: modelValue,
+      });
     } catch (error) {
       console.error("Error during form submission:", error);
       // Optionally handle error state here, e.g., show a toast notification
@@ -43,7 +83,7 @@ export default function InputForm(props: InputFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(props.onSubmit)} className="w-full">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
         <FormField
           control={form.control}
           name="inputField"
@@ -62,17 +102,40 @@ export default function InputForm(props: InputFormProps) {
                   }}
                 />
 
-                <div className="flex items-center justify-end w-full">
-                  {/* <Select>
-                    <SelectTrigger className="border-0 shadow-none">
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="option1">Option 1</SelectItem>
-                      <SelectItem value="option2">Option 2</SelectItem>
-                      <SelectItem value="option3">Option 3</SelectItem>
-                    </SelectContent>
-                  </Select> */}
+                <div className="flex items-center justify-end w-full pt-2 gap-2">
+                  <FormField
+                    control={form.control}
+                    name="model"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select
+                          defaultValue={field.value}
+                          value={field.value}
+                          onValueChange={onModelChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select model" />
+                          </SelectTrigger>
+                          <SelectContent className="px-2 py-1">
+                            {Object.entries(
+                              getAvailableModelsGroupedByProvider()
+                            ).map(([provider, models]) => (
+                              <SelectGroup key={provider}>
+                                <SelectLabel>
+                                  {modelProviderToName(provider)}
+                                </SelectLabel>
+                                {models.map((model) => (
+                                  <SelectItem key={model.id} value={model.id}>
+                                    {model.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
 
                   <Button
                     type="submit"

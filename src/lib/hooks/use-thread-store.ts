@@ -1,4 +1,3 @@
-import { create } from "zustand";
 import {
   useThread,
   useAddMessage,
@@ -6,46 +5,34 @@ import {
   useRemoveMessage,
   useClearThread,
 } from "./use-thread-queries";
-import { Message, MessageRole } from "@/lib/thread-store";
-import { useMemo } from "react";
+import { Message, MessageRole } from "@/lib/types";
+import { useMemo, useState, useEffect } from "react";
 
 /**
- * Thread state without actions
- */
-interface ThreadState {
-  threadId: string | null;
-  setThreadId: (id: string | null) => void;
-  initializeThread: () => void;
-}
-
-/**
- * Local thread store that just manages the current thread ID
- * All data fetching and mutations are handled by TanStack Query
- */
-export const useLocalThreadStore = create<ThreadState>()((set) => ({
-  threadId: null,
-
-  setThreadId: (id) => set({ threadId: id }),
-
-  initializeThread: () => {
-    const storedThreadId = localStorage.getItem("current-thread-id");
-    if (storedThreadId) {
-      set({ threadId: storedThreadId });
-    }
-  },
-}));
-
-/**
- * Hook that combines TanStack Query with Zustand for thread management
+ * Hook for managing the current thread using TanStack Query
+ *
+ * This replaces the previous Zustand implementation with a simpler React hooks approach
  *
  * @returns Thread data and mutation functions
  */
-export function useCurrentThread() {
-  // Get current thread ID from store
-  const threadId = useLocalThreadStore((state) => state.threadId);
-  const initializeThread = useLocalThreadStore(
-    (state) => state.initializeThread
-  );
+export function useCurrentThread(initialThreadId?: string | null) {
+  // Local state to keep track of current thread ID
+  const [threadId, setThreadId] = useState<string | null>(null);
+
+  // Initialize on mount
+  useEffect(() => {
+    // If initial thread ID is provided, use it
+    if (initialThreadId) {
+      setThreadId(initialThreadId);
+      localStorage.setItem("current-thread-id", initialThreadId);
+    } else {
+      // Otherwise check if we have one in localStorage
+      const storedThreadId = localStorage.getItem("current-thread-id");
+      if (storedThreadId) {
+        setThreadId(storedThreadId);
+      }
+    }
+  }, [initialThreadId]);
 
   // Query for current thread data
   const { data: thread, isLoading, isError, error } = useThread(threadId);
@@ -60,6 +47,19 @@ export function useCurrentThread() {
   const messages = useMemo(() => {
     return (thread?.messages as Message[]) || [];
   }, [thread]);
+
+  // Function to initialize or set a new thread ID
+  const initializeThread = (id: string | null = null) => {
+    if (id) {
+      setThreadId(id);
+      localStorage.setItem("current-thread-id", id);
+    } else {
+      const storedThreadId = localStorage.getItem("current-thread-id");
+      if (storedThreadId) {
+        setThreadId(storedThreadId);
+      }
+    }
+  };
 
   // Wrap mutations in simple function interfaces
   const addMessage = async (role: MessageRole, content: string) => {
@@ -100,6 +100,7 @@ export function useCurrentThread() {
   return {
     thread,
     threadId,
+    setThreadId: initializeThread,
     messages,
     isLoading,
     isError,

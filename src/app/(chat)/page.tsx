@@ -33,6 +33,10 @@ export default function Home() {
         threadId: newThreadId,
         role: "user",
         content: data.inputField,
+        // Store the selected model in the message metadata
+        metadata: {
+          model: data.model,
+        },
       });
 
       router.push(`/thread/${newThreadId}`);
