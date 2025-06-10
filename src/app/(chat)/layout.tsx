@@ -2,7 +2,6 @@ import ThreadManager from "@/components/ThreadManager";
 import Profile from "./profile";
 import { QueryClient } from "@tanstack/react-query";
 import { prefetchThreadQueries } from "@/lib/hooks/use-thread-queries";
-import NewThreadButton from "./new-thread-btn";
 
 export default async function ChatLayout({
   children,
