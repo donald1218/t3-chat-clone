@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   getAllThreads,
   getThread,
@@ -12,7 +17,6 @@ import {
 } from "@/app/thread-actions";
 import { Message, MessageRole } from "@/lib/thread-store";
 import { Thread } from "@/db/schema";
-import { generateThreadTitle } from "@/lib/langchain";
 
 // Query keys for better type safety and organization
 export const threadKeys = {
@@ -23,11 +27,28 @@ export const threadKeys = {
   detail: (id: string) => [...threadKeys.details(), id] as const,
 };
 
+export function prefetchThreadQueries(queryClient: QueryClient) {
+  // Prefetch all threads
+  queryClient.prefetchQuery({
+    queryKey: threadKeys.lists(),
+    queryFn: getAllThreads,
+  });
+}
+
 // Hook to fetch all threads
 export function useThreads() {
   return useQuery({
     queryKey: threadKeys.lists(),
     queryFn: getAllThreads,
+    networkMode: "offlineFirst",
+  });
+}
+
+export function prefetchThreadQuery(queryClient: QueryClient, id: string) {
+  // Prefetch a single thread by ID
+  queryClient.prefetchQuery({
+    queryKey: threadKeys.detail(id),
+    queryFn: () => getThread(id),
   });
 }
 

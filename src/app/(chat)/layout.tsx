@@ -1,11 +1,16 @@
 import ThreadManager from "@/components/ThreadManager";
 import Profile from "./profile";
+import { QueryClient } from "@tanstack/react-query";
+import { prefetchThreadQueries } from "@/lib/hooks/use-thread-queries";
 
-export default function ChatLayout({
+export default async function ChatLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const queryClient = new QueryClient();
+  prefetchThreadQueries(queryClient);
+
   return (
     <div className="flex h-screen">
       {/* Sidebar for threads */}

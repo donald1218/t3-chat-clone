@@ -1,5 +1,7 @@
 import { getThread } from "@/app/thread-actions";
 import Thread from "./thread";
+import { QueryClient } from "@tanstack/react-query";
+import { prefetchThreadQuery } from "@/lib/hooks/use-thread-queries";
 
 interface ThreadPageParams {
   id: string;
@@ -11,6 +13,9 @@ export default async function ThreadPage({
   params: Promise<ThreadPageParams>;
 }) {
   const { id } = await params; // Await the promise to get threadId
+
+  const queryClient = new QueryClient();
+  prefetchThreadQuery(queryClient, id);
 
   if (!id) {
     return (
