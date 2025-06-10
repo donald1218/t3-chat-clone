@@ -44,7 +44,7 @@ export default function Home() {
 
   return (
     <div className="flex-1 flex flex-col h-screen p-4">
-      <main className="flex flex-col w-full min-h-screen gap-[32px] items-center justify-center">
+      <main className="flex flex-col w-full h-full gap-[32px] items-center justify-center">
         {/* <div className="w-full pt-8 overflow-y-auto flex-1 relative max-h-[calc(100vh-120px)]">
           <ThreadDisplay className="pb-4" />
         </div> */}
