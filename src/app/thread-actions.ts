@@ -5,7 +5,7 @@ import { threadTable } from "@/db/schema";
 import { generateThreadTitle } from "@/lib/langchain";
 import { createClient } from "@/lib/supabase/server";
 import { Message, MessageRole } from "@/lib/thread-store";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
 /**
@@ -199,7 +199,7 @@ export async function getAllThreads() {
     .select()
     .from(threadTable)
     .where(eq(threadTable.user, userId))
-    .orderBy(threadTable.updatedAt);
+    .orderBy(desc(threadTable.updatedAt));
   return threads;
 }
 

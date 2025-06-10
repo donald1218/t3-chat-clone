@@ -1,17 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { IconPlus, IconRefresh } from "@tabler/icons-react";
 import {
   useCreateThread,
   useDeleteThread,
   useThreads,
 } from "@/lib/hooks/use-thread-queries";
 import { Thread } from "@/db/schema";
-import { TrashIcon } from "lucide-react";
+import { PlusIcon, TrashIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSelectedLayoutSegments } from "next/navigation";
+import { Skeleton } from "./ui/skeleton";
 
 export default function ThreadManager() {
   const router = useRouter();
@@ -24,7 +23,7 @@ export default function ThreadManager() {
   }
 
   // Use TanStack Query to fetch threads
-  const { data: threads = [], isLoading, refetch } = useThreads();
+  const { data: threads = [], isLoading } = useThreads();
 
   // Use mutation hook for creating threads
   const createThreadMutation = useCreateThread();
@@ -61,33 +60,17 @@ export default function ThreadManager() {
   };
 
   return (
-    <div className="w-full">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-medium">Your Threads</h2>
-        <div className="flex gap-1">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => refetch()}
-            className="h-8 w-8 p-0"
-            title="Refresh threads"
-            disabled={isLoading}
-          >
-            <IconRefresh className="h-4 w-4" />
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleCreateNewThread}
-            disabled={createThreadMutation.isPending}
-          >
-            <IconPlus className="mr-1 h-4 w-4" />
-            New Thread
-          </Button>
-        </div>
+    <div className="w-full -m-1">
+      <div className="flex items-center justify-between pl-2">
+        <h3 className="text-md font-bold">Threads</h3>
+        <Button
+          onClick={handleCreateNewThread}
+          variant="ghost"
+          className="rounded-full p-0"
+        >
+          <PlusIcon className="top-2 bottom-2 left-2 right-2 h-2 w-2" />
+        </Button>
       </div>
-
-      <Separator className="my-2" />
 
       {isLoading ? (
         <div className="text-center py-4 text-sm text-gray-500">
@@ -99,13 +82,20 @@ export default function ThreadManager() {
         </div>
       ) : (
         <div className="space-y-2 mt-2">
+          {createThreadMutation.isPending && (
+            <div className="text-left py-2 px-3 text-sm text-gray-500">
+              <Skeleton className="w-48 h-4 bg-gray-300" />
+              <Skeleton className="w-24 h-4 mt-2 bg-gray-300" />
+            </div>
+          )}
+
           {threads.map((thread) => (
             <Link
               key={thread.id}
               href={`/thread/${thread.id}`}
               shallow
               prefetch
-              className={`group flex items-center w-full min-w-0 h-auto py-2 px-4 rounded-lg ${
+              className={`group flex items-center w-full min-w-0 h-auto py-2 px-3 rounded-lg ${
                 currentThreadId === thread.id
                   ? "bg-primary text-primary-foreground"
                   : ""
