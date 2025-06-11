@@ -86,6 +86,48 @@ export function useDeleteThread() {
         queryKey: threadKeys.lists(),
       });
     },
+
+    // Optimistic update for better UX
+    onMutate: async (id) => {
+      // Cancel outgoing refetches for the threads list
+      await queryClient.cancelQueries({
+        queryKey: threadKeys.lists(),
+      });
+
+      // Get current threads data
+      const previousThreads = queryClient.getQueryData<Thread[]>(
+        threadKeys.lists()
+      );
+
+      if (previousThreads) {
+        // Create an optimistic update
+        const updatedThreads = previousThreads.filter(
+          (thread) => thread.id !== id
+        );
+
+        // Update the cache with our optimistic value
+        queryClient.setQueryData(threadKeys.lists(), updatedThreads);
+
+        // Return context with the previous threads data
+        return { previousThreads };
+      }
+
+      return { previousThreads: null };
+    },
+
+    // If error, roll back to previous state
+    onError: (err, id, context) => {
+      if (context?.previousThreads) {
+        queryClient.setQueryData(threadKeys.lists(), context.previousThreads);
+      }
+    },
+
+    // Always refetch the threads list after mutation
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: threadKeys.lists(),
+      });
+    },
   });
 }
 
