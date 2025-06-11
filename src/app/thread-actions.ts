@@ -63,7 +63,7 @@ export async function addMessageToThread(
   threadId: string,
   role: MessageRole,
   content: string,
-  metadata?: { [key: string]: any }
+  metadata?: { [key: string]: unknown }
 ) {
   const [thread] = await db
     .select()

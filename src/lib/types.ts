@@ -11,6 +11,6 @@ export interface Message {
   timestamp: number;
   metadata?: {
     model?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }

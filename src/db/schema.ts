@@ -23,8 +23,3 @@ export const threadTable = pgTable(
 );
 
 export type Thread = InferSelectModel<typeof threadTable>;
-
-// Export all tables for use with drizzle-orm
-export default {
-  threadTable,
-};

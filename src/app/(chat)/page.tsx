@@ -14,7 +14,9 @@ export default function Home() {
   async function onSubmit(data: FormValues) {
     let newThreadId: string;
     try {
-      const newThread = await createThreadMutation.mutateAsync();
+      const newThread = await createThreadMutation.mutateAsync({
+        redirectAfterCreate: false,
+      });
 
       if (!newThread) {
         throw new Error("Failed to create new thread");
