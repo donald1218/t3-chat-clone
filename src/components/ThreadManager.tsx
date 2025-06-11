@@ -29,19 +29,6 @@ export default function ThreadManager() {
   const createThreadMutation = useCreateThread();
   const deleteThreadMutation = useDeleteThread();
 
-  // Function to create a new thread
-  const handleCreateNewThread = async () => {
-    try {
-      const newThread = await createThreadMutation.mutateAsync({
-        redirectAfterCreate: false,
-      });
-
-      router.push(`/thread/${newThread.id}`);
-    } catch (error) {
-      console.error("Failed to create new thread:", error);
-    }
-  };
-
   // Format date for display
   const formatDate = (dateValue: Date | string | null) => {
     if (!dateValue) return "Unknown date";
