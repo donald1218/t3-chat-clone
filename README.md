@@ -11,6 +11,9 @@ This is a chat application built with the T3 stack (Next.js, TypeScript, Tailwin
 
 ## Getting Started
 
+> [!Note]
+> You can also develop in dev container. Refer to the [devcontainer README](./.devcontainer/README.md) for setup instructions.
+
 ### Prerequisites
 
 - Node.js 18+ or Bun

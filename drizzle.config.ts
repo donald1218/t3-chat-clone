@@ -1,3 +1,4 @@
+import "./polyfill/compression";
 import { config } from "dotenv";
 import { defineConfig } from "drizzle-kit";
 

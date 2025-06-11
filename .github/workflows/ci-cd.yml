@@ -1,0 +1,70 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Build
+        run: bun run build
+
+  # Uncomment if you want to add tests in the future
+  # test:
+  #   runs-on: ubuntu-latest
+  #   needs: lint-and-build
+  #
+  #   services:
+  #     postgres:
+  #       image: postgres:16
+  #       env:
+  #         POSTGRES_USER: postgres
+  #         POSTGRES_PASSWORD: postgres
+  #         POSTGRES_DB: t3_chat_clone_test
+  #       ports:
+  #         - 5432:5432
+  #       options: >-
+  #         --health-cmd pg_isready
+  #         --health-interval 10s
+  #         --health-timeout 5s
+  #         --health-retries 5
+  #
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - name: Setup Bun
+  #       uses: oven-sh/setup-bun@v1
+  #       with:
+  #         bun-version: latest
+  #
+  #     - name: Install Dependencies
+  #       run: bun install --frozen-lockfile
+  #
+  #     - name: Run Migrations
+  #       run: bun run db:migrate
+  #       env:
+  #         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/t3_chat_clone_test
+  #
+  #     - name: Run Tests
+  #       run: bun test
+  #       env:
+  #         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/t3_chat_clone_test
+  #         NODE_ENV: test
