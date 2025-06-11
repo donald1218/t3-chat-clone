@@ -17,7 +17,10 @@ export default function Thread(props: ThreadProps) {
   const addMessage = useAddMessage();
 
   useEffect(() => {
-    if (threadData?.messages?.length === 1) {
+    if (!threadData) return;
+    if (!threadData.messages || threadData.messages.length === 0) return;
+
+    if (threadData.messages?.length === 1) {
       // Get the model if it was stored in metadata, or use default
       const storedModel =
         threadData.messages[0].metadata?.model || "gemma-3n-e4b-it";

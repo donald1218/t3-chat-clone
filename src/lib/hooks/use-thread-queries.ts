@@ -81,7 +81,7 @@ export function useDeleteThread() {
   return useMutation({
     mutationKey: threadKeys.lists(),
     mutationFn: (id: string) => deleteThread(id),
-    onSuccess: (_, id) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: threadKeys.lists(),
       });
@@ -145,7 +145,7 @@ export function useAddMessage() {
       threadId: string;
       role: MessageRole;
       content: string;
-      metadata?: { [key: string]: any };
+      metadata?: { [key: string]: unknown };
     }) => {
       const result = await addMessageToThread(
         threadId,
@@ -166,7 +166,7 @@ export function useAddMessage() {
       });
     },
     // Optimistic update for better UX
-    onMutate: async ({ threadId, role, content, metadata }) => {
+    onMutate: async ({ threadId, role, content }) => {
       // Cancel outgoing refetches for the thread
       await queryClient.cancelQueries({
         queryKey: threadKeys.detail(threadId),
