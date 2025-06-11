@@ -1,7 +1,9 @@
-import ThreadManager from "@/components/ThreadManager";
 import Profile from "./profile";
 import { QueryClient } from "@tanstack/react-query";
 import { prefetchThreadQueries } from "@/lib/hooks/use-thread-queries";
+import dynamic from "next/dynamic";
+
+const ThreadManager = dynamic(() => import("@/components/ThreadManager"));
 
 export default async function ChatLayout({
   children,

@@ -32,7 +32,9 @@ export default function ThreadManager() {
   // Function to create a new thread
   const handleCreateNewThread = async () => {
     try {
-      const newThread = await createThreadMutation.mutateAsync();
+      const newThread = await createThreadMutation.mutateAsync({
+        redirectAfterCreate: false,
+      });
 
       router.push(`/thread/${newThread.id}`);
     } catch (error) {
@@ -63,13 +65,11 @@ export default function ThreadManager() {
     <div className="w-full -m-1">
       <div className="flex items-center justify-between pl-2">
         <h3 className="text-md font-bold">Threads</h3>
-        <Button
-          onClick={handleCreateNewThread}
-          variant="ghost"
-          className="rounded-full p-0"
-        >
-          <PlusIcon className="top-2 bottom-2 left-2 right-2 h-2 w-2" />
-        </Button>
+        <Link href="/">
+          <Button variant="ghost" className="rounded-full p-0">
+            <PlusIcon className="top-2 bottom-2 left-2 right-2 h-2 w-2" />
+          </Button>
+        </Link>
       </div>
 
       {isLoading ? (
