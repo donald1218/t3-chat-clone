@@ -7,6 +7,7 @@ import { PopoverContent } from "@radix-ui/react-popover";
 import { LogOutIcon } from "lucide-react";
 import { signOut } from "../actions";
 import { useCurrentUserName } from "@/lib/hooks/use-current-user-name";
+import Link from "next/link";
 
 export default function Profile() {
   const userName = useCurrentUserName();
@@ -30,9 +31,11 @@ export default function Profile() {
               Sign out
             </Button>
 
-            <Button type="button" variant="ghost" className="pl-1">
-              <CurrentUserAvatar /> {userName}
-            </Button>
+            <Link href="/customization" prefetch className="p-0 m-0">
+              <Button type="button" variant="ghost" className="pl-1">
+                <CurrentUserAvatar /> {userName}
+              </Button>
+            </Link>
           </div>
         </PopoverContent>
       </Popover>

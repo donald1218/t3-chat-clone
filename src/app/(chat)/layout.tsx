@@ -7,8 +7,10 @@ const ThreadManager = dynamic(() => import("@/components/ThreadManager"));
 
 export default async function ChatLayout({
   children,
+  customization,
 }: {
   children: React.ReactNode;
+  customization: React.ReactNode;
 }) {
   const queryClient = new QueryClient();
   prefetchThreadQueries(queryClient);
@@ -25,6 +27,7 @@ export default async function ChatLayout({
       </div>
 
       {children}
+      {customization}
     </div>
   );
 }
