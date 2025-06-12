@@ -30,7 +30,9 @@
         "GitHub.copilot",
         "GitHub.copilot-chat",
         "streetsidesoftware.code-spell-checker",
-        "oven.bun-vscode"
+        "oven.bun-vscode",
+        "YoavBls.pretty-ts-errors",
+        "formulahendry.auto-rename-tag"
       ],
       "settings": {
         "editor.formatOnSave": true,
