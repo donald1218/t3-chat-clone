@@ -3,24 +3,71 @@
 import { db } from "@/db/drizzle";
 import { threadTable } from "@/db/schema";
 import { generateThreadTitle } from "@/lib/langchain";
+import { defaultModel } from "@/lib/models";
 import { createClient } from "@/lib/supabase/server";
 import { Message, MessageRole } from "@/lib/types";
 import { desc, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { processInput } from "./actions";
 
 /**
  * Create a new empty thread in the database
  */
-export async function createThread(options?: { redirectAfterCreate: boolean }) {
+export async function createThread(
+  firstMessage: string,
+  model?: string,
+  options?: {
+    redirectAfterCreate: boolean;
+  }
+) {
   const supabase = await createClient();
   const { data: authUserData } = await supabase.auth.getUser();
   const userId = authUserData.user?.id ?? "Guest";
+  const userMessage: Message = {
+    id: crypto.randomUUID(),
+    role: "user" as MessageRole,
+    content: firstMessage,
+    timestamp: Date.now(),
+    metadata: {},
+  };
+
+  let llmResponse = "";
+  try {
+    const result = await processInput({
+      inputField: firstMessage,
+      model: model || "gemma-3n-e4b-it",
+    });
+
+    if (result.success) {
+      // Get the LLM response text
+      llmResponse =
+        typeof result.llmResponse === "string"
+          ? result.llmResponse
+          : result.message || `Processed: ${firstMessage}`;
+    } else {
+      // Handle error case
+      const errorMsg = result.error || "Unknown error";
+      llmResponse = `Error: ${errorMsg}`;
+    }
+  } catch {
+    llmResponse = "An unexpected error occurred";
+  }
+
+  const aiMessage: Message = {
+    id: crypto.randomUUID(),
+    role: "assistant" as MessageRole,
+    content: llmResponse,
+    timestamp: Date.now(),
+    metadata: {
+      model: model || defaultModel.id,
+    },
+  };
 
   const [thread] = await db
     .insert(threadTable)
     .values({
       title: "New Thread",
-      messages: [],
+      messages: [userMessage, aiMessage],
       user: userId,
     })
     .returning();

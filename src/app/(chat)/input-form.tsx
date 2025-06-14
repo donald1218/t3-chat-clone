@@ -61,13 +61,14 @@ export default function InputForm(props: InputFormProps) {
 
   const onSubmit = async (data: FormValues) => {
     const modelValue = form.getValues("model");
-    form.resetField("inputField");
 
     try {
       await props.onSubmit({
         inputField: data.inputField,
         model: modelValue,
       });
+
+      form.resetField("inputField");
     } catch (error) {
       console.error("Error during form submission:", error);
       // Optionally handle error state here, e.g., show a toast notification
@@ -92,6 +93,9 @@ export default function InputForm(props: InputFormProps) {
               <div className="flex flex-col rounded-sm border overflow-hidden pb-1 p-2 max-h-[300px] bg-white">
                 <Textarea
                   {...field}
+                  disabled={
+                    form.formState.isSubmitting || props.externalSubmitting
+                  }
                   placeholder="Type here..."
                   className="border-0 shadow-none px-1 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-y-auto min-h-[60px]"
                   onKeyDown={(e) => {

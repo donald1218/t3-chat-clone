@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { processInput } from "@/app/actions";
 import InputForm from "../../input-form";
 import { FormValues } from "../../input-form.schema";
@@ -13,29 +12,9 @@ interface ThreadProps {
 
 export default function Thread(props: ThreadProps) {
   const { data: threadData, isLoading } = useThread(props.threadId);
-  const [submitting, setSubmitting] = useState(false);
   const addMessage = useAddMessage();
 
-  useEffect(() => {
-    if (!threadData) return;
-    if (!threadData.messages || threadData.messages.length === 0) return;
-
-    if (threadData.messages?.length === 1) {
-      // Get the model if it was stored in metadata, or use default
-      const storedModel =
-        threadData.messages[0].metadata?.model || "gemma-3n-e4b-it";
-
-      getReply({
-        inputField: threadData.messages[0].content || "",
-        model: storedModel,
-      });
-    }
-  });
-
   async function getReply(data: FormValues) {
-    if (submitting) return; // Prevent multiple submissions
-    setSubmitting(true); // Set submission state
-
     try {
       // Use messages from the new store with TanStack Query
       const existingMessageContent = threadData?.messages
@@ -79,8 +58,6 @@ export default function Thread(props: ThreadProps) {
         role: "assistant",
         content: "An unexpected error occurred",
       });
-    } finally {
-      setSubmitting(false); // Reset submission state
     }
   }
 
@@ -124,7 +101,7 @@ export default function Thread(props: ThreadProps) {
       </div>
 
       <div className="sticky bottom-4 w-full max-w-3xl mx-auto">
-        <InputForm onSubmit={onSubmit} externalSubmitting={submitting} />
+        <InputForm onSubmit={onSubmit} />
       </div>
     </>
   );

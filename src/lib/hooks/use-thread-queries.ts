@@ -40,13 +40,15 @@ export function useThreads() {
   return useQuery({
     queryKey: threadKeys.lists(),
     queryFn: getAllThreads,
-    networkMode: "offlineFirst",
   });
 }
 
-export function prefetchThreadQuery(queryClient: QueryClient, id: string) {
+export async function prefetchThreadQuery(
+  queryClient: QueryClient,
+  id: string
+) {
   // Prefetch a single thread by ID
-  queryClient.prefetchQuery({
+  await queryClient.prefetchQuery({
     queryKey: threadKeys.detail(id),
     queryFn: () => getThread(id),
   });
@@ -67,11 +69,69 @@ export function useCreateThread() {
 
   return useMutation({
     mutationKey: threadKeys.lists(),
-    mutationFn: createThread,
+    mutationFn: ({ firstMessage }: { firstMessage: string }) =>
+      createThread(firstMessage),
+
     // When the mutation succeeds, invalidate the threads list query
     onSuccess: (newThread) => {
       queryClient.invalidateQueries({ queryKey: threadKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: threadKeys.detail(newThread.id),
+      });
       return newThread;
+    },
+
+    onMutate: async ({ firstMessage }) => {
+      // Cancel outgoing refetches for the threads list
+      await queryClient.cancelQueries({
+        queryKey: threadKeys.lists(),
+      });
+
+      // Get current threads data
+      const previousThreads = queryClient.getQueryData<Thread[]>(
+        threadKeys.lists()
+      );
+
+      // Create an optimistic update
+      const newThread: Thread = {
+        id: "",
+        title: "",
+        messages: [
+          {
+            id: crypto.randomUUID(),
+            role: "user",
+            content: firstMessage,
+            timestamp: Date.now(),
+            metadata: {},
+          } as Message,
+        ],
+        user: "", // Replace with actual user ID if available
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      // Update the cache with our optimistic value
+      queryClient.setQueryData(threadKeys.lists(), [
+        newThread,
+        ...(previousThreads || []),
+      ]);
+
+      // Return context with the previous threads data
+      return { previousThreads };
+    },
+
+    // If error, roll back to previous state
+    onError: (err, variables, context) => {
+      if (context?.previousThreads) {
+        queryClient.setQueryData(threadKeys.lists(), context.previousThreads);
+      }
+    },
+
+    // Always refetch the threads list after mutation
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: threadKeys.lists(),
+      });
     },
   });
 }

@@ -1,14 +1,23 @@
 "use client";
 
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useEffect, useState } from "react";
 import InputForm from "./input-form";
 import { FormValues } from "./input-form.schema";
-import { useAddMessage, useCreateThread } from "@/lib/hooks/use-thread-queries";
+import {
+  prefetchThreadQuery,
+  useCreateThread,
+  useThreads,
+} from "@/lib/hooks/use-thread-queries";
 import { useRouter } from "next/navigation";
+import ThreadDisplay from "@/components/ThreadDisplay";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function Home() {
+  const { data: threads } = useThreads();
+  const queryClient = useQueryClient();
+  const [hasNewThread, setHasNewThread] = useState(false);
+
   const createThreadMutation = useCreateThread();
-  const addMessageMutation = useAddMessage();
   const router = useRouter();
 
   // Handle form submission with server action
@@ -16,7 +25,7 @@ export default function Home() {
     let newThreadId: string;
     try {
       const newThread = await createThreadMutation.mutateAsync({
-        redirectAfterCreate: false,
+        firstMessage: data.inputField,
       });
 
       if (!newThread) {
@@ -24,37 +33,39 @@ export default function Home() {
       }
 
       newThreadId = newThread.id;
+
+      await prefetchThreadQuery(queryClient, newThreadId);
     } catch (error) {
       console.error("Failed to create new thread:", error);
 
       return;
     }
 
-    try {
-      // Add user message to thread (using both stores for now)
-      await addMessageMutation.mutateAsync({
-        threadId: newThreadId,
-        role: "user",
-        content: data.inputField,
-        // Store the selected model in the message metadata
-        metadata: {
-          model: data.model,
-        },
-      });
+    router.push(`/thread/${newThreadId}`);
+  }
 
-      router.push(`/thread/${newThreadId}`);
-    } catch (error) {
-      console.error("Failed to add user message:", error);
+  useEffect(() => {
+    if (!threads) {
       return;
     }
-  }
+
+    if (threads[0].id == "" && threads[0].user == "") {
+      setHasNewThread(true);
+    }
+  }, [threads]);
 
   return (
     <main className="flex flex-col w-full h-full gap-[32px] items-center justify-center">
-      <div className="text-center text-gray-500 dark:text-gray-400">
-        <h2 className="text-xl font-semibold mb-2">Ask me anything!</h2>
-        <p>Type a message below to start a conversation.</p>
-      </div>
+      {hasNewThread ? (
+        <div className="w-full pt-8 overflow-y-auto flex-1 relative max-h-[calc(100vh-120px)]">
+          <ThreadDisplay className="pb-4" messages={threads?.[0]?.messages} />
+        </div>
+      ) : (
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          <h2 className="text-xl font-semibold mb-2">Ask me anything!</h2>
+          <p>Type a message below to start a conversation.</p>
+        </div>
+      )}
 
       <div className="mx-auto w-full max-w-xl">
         <InputForm onSubmit={onSubmit} />
