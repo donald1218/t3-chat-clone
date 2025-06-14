@@ -1,5 +1,6 @@
 "use client";
 
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import InputForm from "./input-form";
 import { FormValues } from "./input-form.schema";
 import { useAddMessage, useCreateThread } from "@/lib/hooks/use-thread-queries";
@@ -49,21 +50,15 @@ export default function Home() {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-screen p-4">
-      <main className="flex flex-col w-full h-full gap-[32px] items-center justify-center">
-        {/* <div className="w-full pt-8 overflow-y-auto flex-1 relative max-h-[calc(100vh-120px)]">
-          <ThreadDisplay className="pb-4" />
-        </div> */}
+    <main className="flex flex-col w-full h-full gap-[32px] items-center justify-center">
+      <div className="text-center text-gray-500 dark:text-gray-400">
+        <h2 className="text-xl font-semibold mb-2">Ask me anything!</h2>
+        <p>Type a message below to start a conversation.</p>
+      </div>
 
-        <div className="text-center text-gray-500 dark:text-gray-400">
-          <h2 className="text-xl font-semibold mb-2">Ask me anything!</h2>
-          <p>Type a message below to start a conversation.</p>
-        </div>
-
-        <div className="sticky bottom-4 w-full max-w-3xl mx-auto">
-          <InputForm onSubmit={onSubmit} />
-        </div>
-      </main>
-    </div>
+      <div className="mx-auto w-full max-w-xl">
+        <InputForm onSubmit={onSubmit} />
+      </div>
+    </main>
   );
 }
