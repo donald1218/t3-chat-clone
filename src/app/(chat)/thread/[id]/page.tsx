@@ -22,8 +22,8 @@ export default async function ThreadPage({
   }
 
   return (
-    <div className="flex-1 flex flex-col h-screen p-4">
-      <main className="flex flex-col w-full h-full gap-[32px] items-center justify-center">
+    <div className="flex-1 flex flex-col h-screen px-4">
+      <main className="flex flex-col w-full h-full gap-[32px] pb-4 items-center justify-center">
         <Thread threadId={id} />
       </main>
     </div>

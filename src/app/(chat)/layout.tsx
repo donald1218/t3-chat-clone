@@ -18,7 +18,7 @@ export default async function ChatLayout({
     <SidebarProvider>
       <ChatSidebar />
 
-      <SidebarInset>
+      <SidebarInset className="h-screen mx-2">
         <ChatHeader />
 
         {children}

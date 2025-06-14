@@ -8,7 +8,6 @@ import React from "react";
 export default function CusomizationLayout({
   children,
 }: {
-  account: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
