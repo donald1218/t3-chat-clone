@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import dynamic from "next/dynamic";
 
 const Thread = dynamic(() => import("./thread"));
@@ -14,18 +15,8 @@ export default async function ThreadPage({
   const { id } = await params; // Await the promise to get threadId
 
   if (!id) {
-    return (
-      <div className="flex-1 flex items-center justify-center h-screen">
-        <p className="text-gray-500">Thread ID is missing</p>
-      </div>
-    );
+    redirect("/");
   }
 
-  return (
-    <div className="flex-1 flex flex-col h-screen px-4">
-      <main className="flex flex-col w-full h-full gap-[32px] pb-4 items-center justify-center">
-        <Thread threadId={id} />
-      </main>
-    </div>
-  );
+  return <Thread threadId={id} />;
 }

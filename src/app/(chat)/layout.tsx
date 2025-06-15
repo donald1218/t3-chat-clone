@@ -21,7 +21,9 @@ export default async function ChatLayout({
       <SidebarInset className="h-screen mx-2">
         <ChatHeader />
 
-        {children}
+        <main className="px-4 flex flex-col w-full h-full gap-[32px] pb-4 items-center justify-center">
+          {children}
+        </main>
         {customization}
       </SidebarInset>
     </SidebarProvider>

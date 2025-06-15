@@ -55,9 +55,9 @@ export default function Home() {
   }, [threads]);
 
   return (
-    <main className="flex flex-col w-full h-full gap-[32px] items-center justify-center">
+    <>
       {hasNewThread ? (
-        <div className="w-full pt-8 overflow-y-auto flex-1 relative max-h-[calc(100vh-120px)]">
+        <div className="w-full overflow-y-auto flex-1 pt-16">
           <ThreadDisplay className="pb-4" messages={threads?.[0]?.messages} />
         </div>
       ) : (
@@ -67,9 +67,9 @@ export default function Home() {
         </div>
       )}
 
-      <div className="mx-auto w-full max-w-xl">
+      <div className="sticky bottom-4 w-full max-w-3xl mx-auto">
         <InputForm onSubmit={onSubmit} />
       </div>
-    </main>
+    </>
   );
 }
