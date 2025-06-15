@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import InputForm from "./input-form";
 import { FormValues } from "./input-form.schema";
 import {
   prefetchThreadQuery,
@@ -11,6 +10,7 @@ import {
 import { useRouter } from "next/navigation";
 import ThreadDisplay from "@/components/ThreadDisplay";
 import { useQueryClient } from "@tanstack/react-query";
+import UserInput from "./user-input";
 
 export default function Home() {
   const { data: threads } = useThreads();
@@ -67,9 +67,7 @@ export default function Home() {
         </div>
       )}
 
-      <div className="sticky bottom-4 w-full max-w-3xl mx-auto">
-        <InputForm onSubmit={onSubmit} />
-      </div>
+      <UserInput onSubmit={onSubmit} />
     </>
   );
 }
