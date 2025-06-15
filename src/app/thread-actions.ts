@@ -10,6 +10,26 @@ import { desc, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { processInput } from "./actions";
 
+async function getLlmResponse(input: string, model: string): Promise<string> {
+  try {
+    const result = await processInput({
+      inputField: input,
+      model,
+    });
+
+    if (result.success) {
+      return typeof result.llmResponse === "string"
+        ? result.llmResponse
+        : result.message || `Processed: ${input}`;
+    } else {
+      return `Error: ${result.error || "Unknown error"}`;
+    }
+  } catch (error) {
+    console.error("Error processing input:", error);
+    return "An unexpected error occurred";
+  }
+}
+
 /**
  * Create a new empty thread in the database
  */
@@ -31,28 +51,10 @@ export async function createThread(
     metadata: {},
   };
 
-  let llmResponse = "";
-  try {
-    const result = await processInput({
-      inputField: firstMessage,
-      model: model || "gemma-3n-e4b-it",
-    });
-
-    if (result.success) {
-      // Get the LLM response text
-      llmResponse =
-        typeof result.llmResponse === "string"
-          ? result.llmResponse
-          : result.message || `Processed: ${firstMessage}`;
-    } else {
-      // Handle error case
-      const errorMsg = result.error || "Unknown error";
-      llmResponse = `Error: ${errorMsg}`;
-    }
-  } catch {
-    llmResponse = "An unexpected error occurred";
-  }
-
+  const llmResponse = await getLlmResponse(
+    firstMessage,
+    model || defaultModel.id
+  );
   const aiMessage: Message = {
     id: crypto.randomUUID(),
     role: "assistant" as MessageRole,
@@ -106,13 +108,10 @@ export async function getThread(id: string) {
   return thread;
 }
 
-/**
- * Add a message to a thread
- */
-export async function addMessageToThread(
+export async function addUserMessageToThread(
   threadId: string,
-  role: MessageRole,
   content: string,
+  model?: string,
   metadata?: { [key: string]: unknown }
 ) {
   const [thread] = await db
@@ -127,7 +126,7 @@ export async function addMessageToThread(
   const messages = thread.messages as Message[];
   const newMessage: Message = {
     id: crypto.randomUUID(),
-    role,
+    role: "user" as MessageRole,
     content,
     timestamp: Date.now(),
     metadata,
@@ -135,72 +134,21 @@ export async function addMessageToThread(
 
   const updatedMessages = [...messages, newMessage];
 
-  const [updatedThread] = await db
-    .update(threadTable)
-    .set({
-      messages: updatedMessages,
-      updatedAt: new Date(),
-    })
-    .where(eq(threadTable.id, threadId))
-    .returning();
-
-  return { thread: updatedThread, message: newMessage };
-}
-
-/**
- * Update a message in a thread
- */
-export async function updateMessageInThread(
-  threadId: string,
-  messageId: string,
-  content: string
-) {
-  const [thread] = await db
-    .select()
-    .from(threadTable)
-    .where(eq(threadTable.id, threadId));
-
-  if (!thread) {
-    return null;
-  }
-
-  const messages = thread.messages as Message[];
-  const updatedMessages = messages.map((message) =>
-    message.id === messageId ? { ...message, content } : message
+  const llmResponse = await getLlmResponse(
+    updatedMessages.flatMap((msg) => msg.content).join(" "),
+    model || defaultModel.id
   );
 
-  const [updatedThread] = await db
-    .update(threadTable)
-    .set({
-      messages: updatedMessages,
-      updatedAt: new Date(),
-    })
-    .where(eq(threadTable.id, threadId))
-    .returning();
-
-  return updatedThread;
-}
-
-/**
- * Remove a message from a thread
- */
-export async function removeMessageFromThread(
-  threadId: string,
-  messageId: string
-) {
-  const [thread] = await db
-    .select()
-    .from(threadTable)
-    .where(eq(threadTable.id, threadId));
-
-  if (!thread) {
-    return null;
-  }
-
-  const messages = thread.messages as Message[];
-  const updatedMessages = messages.filter(
-    (message) => message.id !== messageId
-  );
+  const aiMessage: Message = {
+    id: crypto.randomUUID(),
+    role: "assistant" as MessageRole,
+    content: llmResponse,
+    timestamp: Date.now(),
+    metadata: {
+      model: model || defaultModel.id,
+    },
+  };
+  updatedMessages.push(aiMessage);
 
   const [updatedThread] = await db
     .update(threadTable)
@@ -211,23 +159,7 @@ export async function removeMessageFromThread(
     .where(eq(threadTable.id, threadId))
     .returning();
 
-  return updatedThread;
-}
-
-/**
- * Clear all messages from a thread
- */
-export async function clearThreadMessages(threadId: string) {
-  const [updatedThread] = await db
-    .update(threadTable)
-    .set({
-      messages: [],
-      updatedAt: new Date(),
-    })
-    .where(eq(threadTable.id, threadId))
-    .returning();
-
-  return updatedThread;
+  return { thread: updatedThread };
 }
 
 /**

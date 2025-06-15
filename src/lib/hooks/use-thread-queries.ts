@@ -8,15 +8,13 @@ import {
   getAllThreads,
   getThread,
   createThread,
-  addMessageToThread,
-  updateMessageInThread,
-  removeMessageFromThread,
-  clearThreadMessages,
   updateThreadTitle,
   deleteThread,
+  addUserMessageToThread,
 } from "@/app/thread-actions";
 import { Message, MessageRole } from "@/lib/types";
 import { Thread } from "@/db/schema";
+import { defaultModel } from "../models";
 
 // Query keys for better type safety and organization
 export const threadKeys = {
@@ -198,19 +196,19 @@ export function useAddMessage() {
   return useMutation({
     mutationFn: async ({
       threadId,
-      role,
       content,
+      model,
       metadata,
     }: {
       threadId: string;
-      role: MessageRole;
       content: string;
+      model?: string;
       metadata?: { [key: string]: unknown };
     }) => {
-      const result = await addMessageToThread(
+      const result = await addUserMessageToThread(
         threadId,
-        role,
         content,
+        model,
         metadata
       );
 
@@ -226,7 +224,7 @@ export function useAddMessage() {
       });
     },
     // Optimistic update for better UX
-    onMutate: async ({ threadId, role, content }) => {
+    onMutate: async ({ threadId, content, model }) => {
       // Cancel outgoing refetches for the thread
       await queryClient.cancelQueries({
         queryKey: threadKeys.detail(threadId),
@@ -242,9 +240,12 @@ export function useAddMessage() {
         const messages = [...(previousThread.messages as Message[])];
         const newMessage: Message = {
           id: crypto.randomUUID(),
-          role,
+          role: "user" as MessageRole,
           content,
           timestamp: Date.now(),
+          metadata: {
+            model: model || defaultModel.id,
+          },
         };
 
         // Add the new message to the thread
@@ -271,66 +272,6 @@ export function useAddMessage() {
           context.previousThread
         );
       }
-    },
-  });
-}
-
-// Hook to update a message
-export function useUpdateMessage() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      threadId,
-      messageId,
-      content,
-    }: {
-      threadId: string;
-      messageId: string;
-      content: string;
-    }) => {
-      return updateMessageInThread(threadId, messageId, content);
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: threadKeys.detail(variables.threadId),
-      });
-    },
-  });
-}
-
-// Hook to remove a message
-export function useRemoveMessage() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      threadId,
-      messageId,
-    }: {
-      threadId: string;
-      messageId: string;
-    }) => {
-      return removeMessageFromThread(threadId, messageId);
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: threadKeys.detail(variables.threadId),
-      });
-    },
-  });
-}
-
-// Hook to clear all messages in a thread
-export function useClearThread() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (threadId: string) => clearThreadMessages(threadId),
-    onSuccess: (_, threadId) => {
-      queryClient.invalidateQueries({
-        queryKey: threadKeys.detail(threadId),
-      });
     },
   });
 }
