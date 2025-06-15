@@ -63,10 +63,13 @@ export async function createThread(
     },
   };
 
+  // Generate title based on first user message and first assistant response
+  const title = await generateThreadTitle(firstMessage + " " + llmResponse);
+
   const [thread] = await db
     .insert(threadTable)
     .values({
-      title: "New Thread",
+      title: title.toString(),
       messages: [userMessage, aiMessage],
       user: userId,
     })
@@ -131,15 +134,6 @@ export async function addMessageToThread(
   };
 
   const updatedMessages = [...messages, newMessage];
-
-  if (updatedMessages.length == 2) {
-    // Generate title based on first user message and first assistant response
-    console.log("generating thread title");
-    const title = await generateThreadTitle(newMessage.content);
-
-    console.log("generated thread title:", title);
-    await updateThreadTitle(threadId, title.toString());
-  }
 
   const [updatedThread] = await db
     .update(threadTable)
