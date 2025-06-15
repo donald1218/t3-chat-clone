@@ -1,44 +1,43 @@
 "use client";
 
 import { CurrentUserAvatar } from "@/components/current-user-avatar";
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverTrigger } from "@/components/ui/popover";
-import { PopoverContent } from "@radix-ui/react-popover";
-import { LogOutIcon } from "lucide-react";
-import { signOut } from "../actions";
-import { useCurrentUserName } from "@/lib/hooks/use-current-user-name";
+import { LogOutIcon, Settings2 } from "lucide-react";
 import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Profile() {
-  const userName = useCurrentUserName();
-
   return (
     <div className="flex items-center justify-start">
-      <Popover>
-        <PopoverTrigger>
-          <CurrentUserAvatar />
-        </PopoverTrigger>
+      <DropdownMenu>
+        <DropdownMenuTrigger className="hover:cursor-pointer">
+          <CurrentUserAvatar className="hover:ring-2 ring-sidebar-border" />
+        </DropdownMenuTrigger>
 
-        <PopoverContent
-          side="right"
-          align="end"
-          alignOffset={-2}
-          sideOffset={-36}
-        >
-          <div className="flex flex-col bg-white rounded-lg shadow">
-            <Button type="button" onClick={signOut} variant="ghost">
+        <DropdownMenuContent side="bottom" align="start">
+          <DropdownMenuItem>
+            <Link
+              href="/customization"
+              prefetch
+              className="p-0 m-0 flex items-center"
+            >
+              <Settings2 className="mr-2 h-4 w-4" />
+              Customization
+            </Link>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem>
+            <Link href="/signout" className="flex items-center">
               <LogOutIcon className="mr-2 h-4 w-4" />
               Sign out
-            </Button>
-
-            <Link href="/customization" prefetch className="p-0 m-0">
-              <Button type="button" variant="ghost" className="pl-1">
-                <CurrentUserAvatar /> {userName}
-              </Button>
             </Link>
-          </div>
-        </PopoverContent>
-      </Popover>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

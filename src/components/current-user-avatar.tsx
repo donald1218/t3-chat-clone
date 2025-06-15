@@ -4,7 +4,11 @@ import { useCurrentUserImage } from "@/lib/hooks/use-current-user-image";
 import { useCurrentUserName } from "@/lib/hooks/use-current-user-name";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export const CurrentUserAvatar = () => {
+interface CurrentUserAvatarProps {
+  className?: string;
+}
+
+export const CurrentUserAvatar = (props: CurrentUserAvatarProps) => {
   const profileImage = useCurrentUserImage();
   const name = useCurrentUserName();
   const initials = name
@@ -14,7 +18,7 @@ export const CurrentUserAvatar = () => {
     ?.toUpperCase();
 
   return (
-    <Avatar>
+    <Avatar className={props.className}>
       {profileImage && <AvatarImage src={profileImage} alt={initials} />}
       <AvatarFallback>{initials}</AvatarFallback>
     </Avatar>
