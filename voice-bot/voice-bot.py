@@ -15,7 +15,10 @@ from livekit.agents import (
     cli,
     function_tool,
 )
-from livekit.plugins import openai, silero, google
+from livekit.plugins import openai, silero, google, langchain
+from livekit.rtc import Room
+from langgraph.graph import StateGraph
+from lang_graph import LLM, LLMStream
 
 dotenv.load_dotenv()
 
@@ -45,21 +48,23 @@ async def entrypoint(ctx: JobContext):
     session = AgentSession(
         vad=silero.VAD.load(),
         # any combination of STT, LLM, TTS, or realtime API can be used
-        stt=openai.STT(model="Systran/faster-whisper-small", base_url="localhost:8000/v1", api_key="1234567890"),
-        tts=openai.TTS(model="speaches-ai/Kokoro-82M-v1.0-ONNX", voice="af_heart",speed=1.0, base_url="localhost:8000/v1", api_key="1234567890"),
+        stt=openai.STT(model="Systran/faster-whisper-small.en", base_url="http://localhost:8000/v1", api_key="1234567890"),
+        tts=openai.TTS(model="speaches-ai/Kokoro-82M-v1.0-ONNX", voice="af_heart",speed=1.0, base_url="http://localhost:8000/v1", api_key="1234567890"),
     )
 
     await session.start(
+        room=ctx.room,
         agent=Agent(
             instructions="You are a friendly voice assistant built by LiveKit.",
-            llm=google.LLM(
-            model="models/gemma-3-27b-it",
+            llm=LLM(
+            model="gemma-3-27b-it",
             api_key=google_api_key,
-            temperature=0.8,
         )),
     )
     await session.generate_reply(instructions="greet the user and ask about their day")
-
+    
 
 if __name__ == "__main__":
-    cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
+    api_key = os.getenv("LIVEKIT_API_KEY")
+    api_secret = os.getenv("LIVEKIT_SECRET")
+    cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint, api_key=api_key, api_secret=api_secret))
