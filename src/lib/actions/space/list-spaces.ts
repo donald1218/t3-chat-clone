@@ -1,6 +1,6 @@
 "use server";
 
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 
 export async function listSpaces() {
   const { createClient } = await import("@/lib/supabase/server");

@@ -142,7 +142,7 @@ export function UpdateSpaceForm({
       name: space?.name || "",
       prompt: space?.prompt || "",
     });
-  }, [isLoading]);
+  }, [form, isLoading, space?.name, space?.prompt]);
 
   if (isLoading) {
     return (
