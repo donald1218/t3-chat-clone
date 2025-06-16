@@ -7,11 +7,9 @@ import ChatHeader from "./header";
 export default async function ChatLayout({
   params,
   children,
-  customization,
 }: {
   params: Promise<{ spaceId: string }>;
   children: React.ReactNode;
-  customization: React.ReactNode;
 }) {
   const { spaceId } = await params;
 
@@ -28,7 +26,6 @@ export default async function ChatLayout({
         <main className="px-4 flex flex-col w-full h-full gap-[32px] pb-4 items-center justify-center">
           {children}
         </main>
-        {customization}
       </SidebarInset>
     </SidebarProvider>
   );

@@ -83,7 +83,7 @@ export default function ThreadManager(props: ThreadManagerProps) {
           {threads.map((thread) => (
             <Link
               key={thread.id}
-              href={`/thread/${thread.id}`}
+              href={`/${props.spaceId}/thread/${thread.id}`}
               shallow
               prefetch
               className={`group flex items-center w-full min-w-0 h-auto py-2 px-3 rounded-lg ${
@@ -115,7 +115,7 @@ export default function ThreadManager(props: ThreadManagerProps) {
                     deleteThreadMutation.mutate(thread.id, {
                       onSuccess: () => {
                         if (currentThreadId === thread.id) {
-                          router.push("/"); // Ensure we don't stay on the deleted thread
+                          router.push(`/${props.spaceId}`); // Ensure we don't stay on the deleted thread
                         }
                       },
                     });
