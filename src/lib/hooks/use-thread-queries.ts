@@ -11,6 +11,7 @@ import {
   updateThreadTitle,
   deleteThread,
   addUserMessageToThread,
+  getThreadsBySpaceId,
 } from "@/app/thread-actions";
 import { Message, MessageRole } from "@/lib/types";
 import { Thread } from "@/db/schema";
@@ -34,10 +35,10 @@ export function prefetchThreadQueries(queryClient: QueryClient) {
 }
 
 // Hook to fetch all threads
-export function useThreads() {
+export function useThreads(spaceId: string) {
   return useQuery({
-    queryKey: threadKeys.lists(),
-    queryFn: getAllThreads,
+    queryKey: [threadKeys.lists(), spaceId],
+    queryFn: () => getThreadsBySpaceId(spaceId),
   });
 }
 
@@ -64,25 +65,36 @@ export function useThread(id: string | null) {
 // Hook to create a new thread
 export function useCreateThread() {
   const queryClient = useQueryClient();
+  const queryKeyWithSpaceId = (spaceId: string) => [
+    threadKeys.lists(),
+    spaceId,
+  ];
 
   return useMutation({
     mutationKey: threadKeys.lists(),
-    mutationFn: ({ firstMessage }: { firstMessage: string }) =>
-      createThread(firstMessage),
+    mutationFn: ({
+      spaceId,
+      firstMessage,
+    }: {
+      spaceId: string;
+      firstMessage: string;
+    }) => createThread(spaceId, firstMessage),
 
     // When the mutation succeeds, invalidate the threads list query
     onSuccess: (newThread) => {
-      queryClient.invalidateQueries({ queryKey: threadKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: queryKeyWithSpaceId(newThread.spaceId),
+      });
       queryClient.invalidateQueries({
         queryKey: threadKeys.detail(newThread.id),
       });
       return newThread;
     },
 
-    onMutate: async ({ firstMessage }) => {
+    onMutate: async ({ spaceId, firstMessage }) => {
       // Cancel outgoing refetches for the threads list
       await queryClient.cancelQueries({
-        queryKey: threadKeys.lists(),
+        queryKey: queryKeyWithSpaceId(spaceId),
       });
 
       // Get current threads data
@@ -94,6 +106,7 @@ export function useCreateThread() {
       const newThread: Thread = {
         id: "",
         title: "",
+        spaceId: spaceId,
         messages: [
           {
             id: crypto.randomUUID(),
@@ -109,7 +122,7 @@ export function useCreateThread() {
       };
 
       // Update the cache with our optimistic value
-      queryClient.setQueryData(threadKeys.lists(), [
+      queryClient.setQueryData(queryKeyWithSpaceId(spaceId), [
         newThread,
         ...(previousThreads || []),
       ]);
@@ -121,14 +134,17 @@ export function useCreateThread() {
     // If error, roll back to previous state
     onError: (err, variables, context) => {
       if (context?.previousThreads) {
-        queryClient.setQueryData(threadKeys.lists(), context.previousThreads);
+        queryClient.setQueryData(
+          queryKeyWithSpaceId(context.previousThreads[0].spaceId),
+          context.previousThreads
+        );
       }
     },
 
     // Always refetch the threads list after mutation
-    onSettled: () => {
+    onSettled: (data) => {
       queryClient.invalidateQueries({
-        queryKey: threadKeys.lists(),
+        queryKey: queryKeyWithSpaceId(data?.spaceId || ""),
       });
     },
   });
@@ -181,9 +197,9 @@ export function useDeleteThread() {
     },
 
     // Always refetch the threads list after mutation
-    onSettled: () => {
+    onSettled: (data) => {
       queryClient.invalidateQueries({
-        queryKey: threadKeys.lists(),
+        queryKey: [threadKeys.lists(), data?.spaceId || ""],
       });
     },
   });

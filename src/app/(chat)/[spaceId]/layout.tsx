@@ -5,18 +5,22 @@ import ChatSidebar from "./sidebar";
 import ChatHeader from "./header";
 
 export default async function ChatLayout({
+  params,
   children,
   customization,
 }: {
+  params: Promise<{ spaceId: string }>;
   children: React.ReactNode;
   customization: React.ReactNode;
 }) {
+  const { spaceId } = await params;
+
   const queryClient = new QueryClient();
   prefetchThreadQueries(queryClient);
 
   return (
     <SidebarProvider>
-      <ChatSidebar />
+      <ChatSidebar spaceId={spaceId} />
 
       <SidebarInset className="h-screen mx-2">
         <ChatHeader />

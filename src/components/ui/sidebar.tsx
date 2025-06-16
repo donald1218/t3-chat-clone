@@ -339,7 +339,7 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
       data-sidebar="header"
       className={cn(
         "flex flex-col gap-2 p-2 rounded-xl",
-        "group-data-[variant=floating]:bg-sidebar group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:border group-data[variant=floating]:shadow-xl",
+        "group-data-[variant=floating]:bg-sidebar group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm",
         className
       )}
       {...props}
@@ -353,8 +353,8 @@ function SidebarFooter({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="sidebar-footer"
       data-sidebar="footer"
       className={cn(
-        "flex flex-col gap-2 p-2",
-        "group-data-[variant=floating]:bg-sidebar, group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow-xl",
+        "flex flex-col gap-2 p-2 rounded-xl",
+        "group-data-[variant=floating]:bg-sidebar group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm",
         className
       )}
       {...props}
@@ -383,7 +383,7 @@ function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
       data-sidebar="content"
       className={cn(
         "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
-        "group-data-[variant=floating]:bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow-xl",
+        "group-data-[variant=floating]:bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow-sm",
         className
       )}
       {...props}

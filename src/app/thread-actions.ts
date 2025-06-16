@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db/drizzle";
-import { threadTable } from "@/db/schema";
+import { spaceTable, threadTable } from "@/db/schema";
 import { generateThreadTitle } from "@/lib/langchain";
 import { defaultModel } from "@/lib/models";
 import { createClient } from "@/lib/supabase/server";
@@ -34,6 +34,7 @@ async function getLlmResponse(input: string, model: string): Promise<string> {
  * Create a new empty thread in the database
  */
 export async function createThread(
+  spaceId: string,
   firstMessage: string,
   model?: string,
   options?: {
@@ -51,8 +52,17 @@ export async function createThread(
     metadata: {},
   };
 
+  const [space] = await db
+    .select()
+    .from(spaceTable)
+    .where(eq(spaceTable.id, spaceId))
+    .limit(1);
+  if (!space) {
+    throw new Error("Space not found");
+  }
+
   const llmResponse = await getLlmResponse(
-    firstMessage,
+    space.prompt + firstMessage,
     model || defaultModel.id
   );
   const aiMessage: Message = {
@@ -71,6 +81,7 @@ export async function createThread(
   const [thread] = await db
     .insert(threadTable)
     .values({
+      spaceId,
       title: title.toString(),
       messages: [userMessage, aiMessage],
       user: userId,
@@ -118,9 +129,17 @@ export async function addUserMessageToThread(
     .select()
     .from(threadTable)
     .where(eq(threadTable.id, threadId));
-
   if (!thread) {
-    return null;
+    throw new Error("Thread not found");
+  }
+
+  const [space] = await db
+    .select()
+    .from(spaceTable)
+    .where(eq(spaceTable.id, thread.spaceId))
+    .limit(1);
+  if (!space) {
+    throw new Error("Space not found");
   }
 
   const messages = thread.messages as Message[];
@@ -135,7 +154,7 @@ export async function addUserMessageToThread(
   const updatedMessages = [...messages, newMessage];
 
   const llmResponse = await getLlmResponse(
-    updatedMessages.flatMap((msg) => msg.content).join(" "),
+    space.prompt + updatedMessages.flatMap((msg) => msg.content).join(" "),
     model || defaultModel.id
   );
 
@@ -174,6 +193,15 @@ export async function getAllThreads() {
     .select()
     .from(threadTable)
     .where(eq(threadTable.user, userId))
+    .orderBy(desc(threadTable.updatedAt));
+  return threads;
+}
+
+export async function getThreadsBySpaceId(spaceId: string) {
+  const threads = await db
+    .select()
+    .from(threadTable)
+    .where(eq(threadTable.spaceId, spaceId))
     .orderBy(desc(threadTable.updatedAt));
   return threads;
 }

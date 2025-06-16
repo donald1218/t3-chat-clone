@@ -12,7 +12,11 @@ import Link from "next/link";
 import { useRouter, useSelectedLayoutSegments } from "next/navigation";
 import { Skeleton } from "./ui/skeleton";
 
-export default function ThreadManager() {
+interface ThreadManagerProps {
+  spaceId?: string; // Optional spaceId prop for future use
+}
+
+export default function ThreadManager(props: ThreadManagerProps) {
   const router = useRouter();
 
   const segment = useSelectedLayoutSegments();
@@ -23,7 +27,7 @@ export default function ThreadManager() {
   }
 
   // Use TanStack Query to fetch threads
-  const { data: threads = [], isLoading } = useThreads();
+  const { data: threads = [], isLoading } = useThreads(props.spaceId || "");
 
   // Use mutation hook for creating threads
   const createThreadMutation = useCreateThread();
@@ -52,7 +56,7 @@ export default function ThreadManager() {
     <div className="w-full -m-1">
       <div className="flex items-center justify-between pl-2">
         <h3 className="text-md font-bold">Threads</h3>
-        <Link href="/">
+        <Link href={`/${props.spaceId}`}>
           <Button variant="ghost" className="rounded-full p-0">
             <PlusIcon className="top-2 bottom-2 left-2 right-2 h-2 w-2" />
           </Button>
