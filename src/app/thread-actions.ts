@@ -1,33 +1,38 @@
 "use server";
 
 import { db } from "@/db/drizzle";
-import { spaceTable, threadTable } from "@/db/schema";
+import { spaceTable, Thread, threadTable } from "@/db/schema";
 import { generateThreadTitle, getLLMResponse } from "@/lib/langchain";
 import { defaultModel } from "@/lib/models";
 import { createClient } from "@/lib/supabase/server";
 import { Message, MessageRole } from "@/lib/types";
 import { desc, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { processInput } from "./actions";
 
-async function getLlmResponse(input: string, model: string): Promise<string> {
-  try {
-    const result = await processInput({
-      inputField: input,
-      model,
-    });
+export async function createThreadWithoutInput(spaceId: string) {
+  const supabase = await createClient();
+  const { data: authUserData } = await supabase.auth.getUser();
+  const userId = authUserData.user?.id ?? "Guest";
 
-    if (result.success) {
-      return typeof result.llmResponse === "string"
-        ? result.llmResponse
-        : result.message || `Processed: ${input}`;
-    } else {
-      return `Error: ${result.error || "Unknown error"}`;
-    }
-  } catch (error) {
-    console.error("Error processing input:", error);
-    return "An unexpected error occurred";
+  const [space] = await db
+    .select()
+    .from(spaceTable)
+    .where(eq(spaceTable.id, spaceId))
+    .limit(1);
+  if (!space) {
+    throw new Error("Space not found");
   }
+
+  const [thread] = await db
+    .insert(threadTable)
+    .values({
+      spaceId,
+      messages: [],
+      user: userId,
+    })
+    .returning();
+
+  return thread;
 }
 
 /**
@@ -219,6 +224,19 @@ export async function updateThreadTitle(threadId: string, title: string) {
     .update(threadTable)
     .set({
       title,
+      updatedAt: new Date(),
+    })
+    .where(eq(threadTable.id, threadId))
+    .returning();
+
+  return updatedThread;
+}
+
+export async function updateThread(threadId: string, updates: Partial<Thread>) {
+  const [updatedThread] = await db
+    .update(threadTable)
+    .set({
+      ...updates,
       updatedAt: new Date(),
     })
     .where(eq(threadTable.id, threadId))

@@ -1,13 +1,13 @@
 "use client";
 
-import { type Message } from "@/lib/types";
 import LlmResponseDisplay from "./LlmResponseDisplay";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef } from "react";
+import type { UIMessage } from "ai";
 
 interface ThreadDisplayProps {
   className?: string;
-  messages?: Message[];
+  messages?: UIMessage[];
 }
 
 export default function ThreadDisplay({
@@ -50,30 +50,30 @@ export default function ThreadDisplay({
   );
 }
 
-function MessageItem({ message }: { message: Message }) {
+function MessageItem({ message }: { message: UIMessage }) {
   const { role, content } = message;
 
   return (
     <div
       className={cn(
         "flex flex-col px-4 py-3 rounded-lg",
-        role === "human"
+        role === "user"
           ? "bg-blue-50 dark:bg-blue-900/20 ml-8"
           : "bg-gray-50 dark:bg-gray-800/50 mr-8"
       )}
     >
       <div className="font-medium mb-1">
-        {role === "human" ? "You" : "Assistant"}
+        {role === "user" ? "You" : "Assistant"}
       </div>
 
-      {role === "ai" ? (
+      {role === "assistant" ? (
         <LlmResponseDisplay response={content} />
       ) : (
         <div className="whitespace-pre-wrap">{content}</div>
       )}
 
       <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 self-end">
-        {new Date(message.timestamp).toLocaleTimeString()}
+        {message.createdAt && new Date(message.createdAt).toLocaleTimeString()}
       </div>
     </div>
   );

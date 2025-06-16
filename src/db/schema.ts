@@ -7,7 +7,8 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { type InferSelectModel } from "drizzle-orm";
-import { BYOKConfig, LLMProvider, Message } from "@/lib/types";
+import { BYOKConfig, LLMProvider } from "@/lib/types";
+import { type Message } from "ai";
 
 export const spaceTable = pgTable(
   "space",

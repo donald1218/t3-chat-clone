@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import dynamic from "next/dynamic";
+import { getThread } from "@/app/thread-actions";
 
 const Thread = dynamic(() => import("./thread"));
 
@@ -18,5 +19,7 @@ export default async function ThreadPage({
     redirect("/");
   }
 
-  return <Thread threadId={id} />;
+  const thread = await getThread(id);
+
+  return <Thread threadId={id} initialMessages={thread.messages} />;
 }
