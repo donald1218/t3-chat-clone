@@ -2,7 +2,7 @@
  * Types for the chat application
  */
 
-export type MessageRole = "user" | "assistant";
+export type MessageRole = "human" | "ai";
 
 export interface Message {
   id: string;

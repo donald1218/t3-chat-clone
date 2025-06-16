@@ -2,7 +2,7 @@
 
 import { db } from "@/db/drizzle";
 import { spaceTable, threadTable } from "@/db/schema";
-import { generateThreadTitle } from "@/lib/langchain";
+import { generateThreadTitle, getLLMResponse } from "@/lib/langchain";
 import { defaultModel } from "@/lib/models";
 import { createClient } from "@/lib/supabase/server";
 import { Message, MessageRole } from "@/lib/types";
@@ -46,7 +46,7 @@ export async function createThread(
   const userId = authUserData.user?.id ?? "Guest";
   const userMessage: Message = {
     id: crypto.randomUUID(),
-    role: "user" as MessageRole,
+    role: "human",
     content: firstMessage,
     timestamp: Date.now(),
     metadata: {},
@@ -61,13 +61,14 @@ export async function createThread(
     throw new Error("Space not found");
   }
 
-  const llmResponse = await getLlmResponse(
-    space.prompt + firstMessage,
-    model || defaultModel.id
-  );
+  const llmResponse = await getLLMResponse([
+    ["system", space.prompt],
+    ["human", firstMessage],
+  ]);
+
   const aiMessage: Message = {
     id: crypto.randomUUID(),
-    role: "assistant" as MessageRole,
+    role: "ai",
     content: llmResponse,
     timestamp: Date.now(),
     metadata: {
@@ -145,7 +146,7 @@ export async function addUserMessageToThread(
   const messages = thread.messages as Message[];
   const newMessage: Message = {
     id: crypto.randomUUID(),
-    role: "user" as MessageRole,
+    role: "human",
     content,
     timestamp: Date.now(),
     metadata,
@@ -153,14 +154,18 @@ export async function addUserMessageToThread(
 
   const updatedMessages = [...messages, newMessage];
 
-  const llmResponse = await getLlmResponse(
-    space.prompt + updatedMessages.flatMap((msg) => msg.content).join(" "),
+  const context = updatedMessages.map(
+    (msg) => [msg.role, msg.content] satisfies [MessageRole, string]
+  );
+
+  const llmResponse = await getLLMResponse(
+    [["system", space.prompt], ...context, ["human", content]],
     model || defaultModel.id
   );
 
   const aiMessage: Message = {
     id: crypto.randomUUID(),
-    role: "assistant" as MessageRole,
+    role: "ai",
     content: llmResponse,
     timestamp: Date.now(),
     metadata: {

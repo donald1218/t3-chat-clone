@@ -1,3 +1,5 @@
+import { MessageType } from "@langchain/core/messages";
+import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatGoogle } from "@langchain/google-gauth";
 import { getModelById } from "./models";
@@ -92,7 +94,8 @@ export async function getChatModel(modelId: string = "gemma-3n-e4b-it") {
 export async function streamingLLMResponse(input: string, modelId?: string) {
   try {
     const chatModel = await getChatModel(modelId);
-    const stream = await chatModel.stream(input);
+    const chain = chatModel.pipe(new StringOutputParser());
+    const stream = await chain.stream(input);
     return stream;
   } catch (error) {
     console.error("Error streaming from LLM:", error);
@@ -100,11 +103,15 @@ export async function streamingLLMResponse(input: string, modelId?: string) {
   }
 }
 
+type ChatContext = [MessageType, string];
+
 // Helper function for non-streaming responses
-export async function getLLMResponse(input: string, modelId?: string) {
+export async function getLLMResponse(context: ChatContext[], modelId?: string) {
   try {
     const chatModel = await getChatModel(modelId);
-    const response = await chatModel.invoke(input);
+    const chain = chatModel.pipe(new StringOutputParser());
+    const response = await chain.invoke(context);
+
     return response;
   } catch (error) {
     console.error("Error getting response from LLM:", error);
