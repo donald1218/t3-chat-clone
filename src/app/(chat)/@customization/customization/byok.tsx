@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type ControllerRenderProps, useForm } from "react-hook-form";
 import * as z from "zod";
-import { Eye, EyeClosed } from "lucide-react";
+import { CheckIcon, Eye, EyeClosed } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -106,7 +106,7 @@ export function SecretInput(props: SecretInputProps) {
 
 export default function BYOKTab() {
   const currentValue = useByokUserKeys();
-  const addKeyMutation = useAddByokUserKeys();
+  const { mutate: addKey, isPending, isSuccess } = useAddByokUserKeys();
 
   const form = useForm<UserProfileApiKeysValues>({
     resolver: zodResolver(userProfileApiKeysSchema),
@@ -124,7 +124,7 @@ export default function BYOKTab() {
 
   function onSubmit(data: UserProfileApiKeysValues) {
     if (data.openaiApiKey) {
-      addKeyMutation.mutate({
+      addKey({
         provider: "openai",
         config: {
           apiKey: data.openaiApiKey,
@@ -133,7 +133,7 @@ export default function BYOKTab() {
     }
 
     if (data.anthropicApiKey) {
-      addKeyMutation.mutate({
+      addKey({
         provider: "anthropic",
         config: {
           apiKey: data.anthropicApiKey,
@@ -142,7 +142,7 @@ export default function BYOKTab() {
     }
 
     if (data.googleGeminiApiKey) {
-      addKeyMutation.mutate({
+      addKey({
         provider: "google-gemini",
         config: {
           apiKey: data.googleGeminiApiKey,
@@ -151,7 +151,7 @@ export default function BYOKTab() {
     }
 
     if (data.openRouterApiKey) {
-      addKeyMutation.mutate({
+      addKey({
         provider: "openrouter",
         config: {
           apiKey: data.openRouterApiKey,
@@ -214,7 +214,16 @@ export default function BYOKTab() {
             />
           )}
         />
-        <Button type="submit">Save Preferences</Button>
+        <div className="flex items-center gap-2">
+          <Button type="submit">Save</Button>
+          {isPending && (
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
+          )}
+
+          {isSuccess && (
+            <CheckIcon className="h-4 w-4 stroke-2 stroke-primary" />
+          )}
+        </div>
       </form>
     </Form>
   );

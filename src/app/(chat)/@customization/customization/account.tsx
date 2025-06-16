@@ -16,10 +16,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useProfile, useUpdateProfile } from "@/lib/hooks/use-profile-queries";
+import { useEffect } from "react";
+import { CheckIcon } from "lucide-react";
 // import { toast } from '@/components/ui/use-toast' // Assuming you have a toast component
 
 const userProfileCustomizationSchema = z.object({
-  aiName: z
+  name: z
     .string()
     .min(2, {
       message: "Name must be at least 2 characters.",
@@ -36,19 +39,34 @@ type UserProfileCustomizationValues = z.infer<
   typeof userProfileCustomizationSchema
 >;
 
-// This can come from your database or context
-const defaultValues: Partial<UserProfileCustomizationValues> = {
-  // aiName: "Buddy",
-  // userProfession: "Software Engineer",
-  // customInstructions: "Respond in a friendly and helpful manner."
-};
-
 export default function AccountTab() {
+  const { data: profile, isLoading } = useProfile();
+  const {
+    mutate: updateProfile,
+    isSuccess: isUpdateSuccess,
+    isPending: isUpdatePending,
+  } = useUpdateProfile();
+
   const form = useForm<UserProfileCustomizationValues>({
     resolver: zodResolver(userProfileCustomizationSchema),
-    defaultValues,
+    defaultValues: {
+      name: profile?.name || "",
+      userProfession: profile?.profession || "",
+      customInstructions: profile?.customInstructions || "",
+    },
     mode: "onChange",
   });
+
+  useEffect(() => {
+    if (isLoading) return; // Prevents resetting form while loading
+    if (!profile) return; // Prevents resetting form if profile is not available
+
+    form.reset({
+      name: profile.name || "",
+      userProfession: profile.profession || "",
+      customInstructions: profile.customInstructions || "",
+    });
+  }, [profile, isLoading, form]);
 
   function onSubmit(data: UserProfileCustomizationValues) {
     // toast({ // Assuming you have a toast component
@@ -60,6 +78,12 @@ export default function AccountTab() {
     //   ),
     // })
     console.log("Customization data submitted:", data);
+
+    updateProfile({
+      name: data.name,
+      userProfession: data.userProfession,
+      customInstructions: data.customInstructions,
+    });
     // Here you would typically save the data to your backend
   }
 
@@ -71,7 +95,7 @@ export default function AccountTab() {
       >
         <FormField
           control={form.control}
-          name="aiName"
+          name="name"
           render={({ field }) => (
             <FormItem>
               <FormLabel>What should the AI call you?</FormLabel>
@@ -127,7 +151,17 @@ export default function AccountTab() {
             </FormItem>
           )}
         />
-        <Button type="submit">Update Customization</Button>
+
+        <div className="flex items-center gap-2">
+          <Button type="submit">Update</Button>
+          {isUpdatePending && (
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
+          )}
+
+          {isUpdateSuccess && (
+            <CheckIcon className="h-4 w-4 stroke-2 stroke-primary" />
+          )}
+        </div>
       </form>
     </Form>
   );

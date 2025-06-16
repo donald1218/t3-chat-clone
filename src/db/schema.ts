@@ -40,9 +40,9 @@ export const threadTable = pgTable(
 
 export const preferencesTable = pgTable("preferences", {
   userId: text("user_id").primaryKey(),
-  name: text("name").notNull(),
-  profession: text("profession").notNull().default(""),
-  customInstructions: text("custom_instructions").notNull().default(""),
+  name: text("name").default(""),
+  profession: text("profession").default(""),
+  customInstructions: text("custom_instructions").default(""),
 });
 
 export const byokTable = pgTable("byok", {
