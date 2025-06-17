@@ -4,7 +4,10 @@ import { type Message, useChat } from "@ai-sdk/react";
 import InputForm from "../../input-form";
 import { FormValues } from "../../input-form.schema";
 import ThreadDisplay from "@/components/ThreadDisplay";
-import { appendClientMessage, createIdGenerator } from "ai";
+import { createIdGenerator } from "ai";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { useQueryState } from "nuqs";
 
 interface ThreadProps {
   threadId: string;
@@ -12,7 +15,13 @@ interface ThreadProps {
 }
 
 export default function Thread(props: ThreadProps) {
-  const { handleSubmit, append, messages } = useChat({
+  const router = useRouter();
+  const reloaded = useRef(false);
+  const [isNew, setIsNew] = useQueryState("new", {
+    parse: (value) => value === "true",
+  });
+
+  const { handleSubmit, append, messages, reload } = useChat({
     id: props.threadId,
     initialMessages: props.initialMessages ?? [],
     sendExtraMessageFields: true,
@@ -36,6 +45,15 @@ export default function Thread(props: ThreadProps) {
       content: data.inputField,
     });
   }
+
+  useEffect(() => {
+    if (!reloaded.current && isNew) {
+      // If this is a new thread, reload to fetch the initial ai response
+      reloaded.current = true; // Prevent infinite reload loop
+      setIsNew(false); // Reset the new state after reloading
+      reload();
+    }
+  }, [isNew, setIsNew, reload]);
 
   return (
     <>

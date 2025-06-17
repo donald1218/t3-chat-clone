@@ -72,9 +72,9 @@ function MessageItem({ message }: { message: UIMessage }) {
         <div className="whitespace-pre-wrap">{content}</div>
       )}
 
-      <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 self-end">
+      {/* <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 self-end">
         {message.createdAt && new Date(message.createdAt).toLocaleTimeString()}
-      </div>
+      </div> */}
     </div>
   );
 }

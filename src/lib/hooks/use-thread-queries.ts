@@ -34,6 +34,17 @@ export function prefetchThreadQueries(queryClient: QueryClient) {
   });
 }
 
+export function useInvalidListThreadQuery(spaceId: string) {
+  const queryClient = useQueryClient();
+
+  return () => {
+    // Invalidate the threads list query
+    queryClient.invalidateQueries({
+      queryKey: [threadKeys.lists(), spaceId],
+    });
+  };
+}
+
 // Hook to fetch all threads
 export function useThreads(spaceId: string) {
   return useQuery({

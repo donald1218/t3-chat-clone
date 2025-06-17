@@ -1,5 +1,4 @@
-import { createThreadWithoutInput } from "@/app/thread-actions";
-import { redirect } from "next/navigation";
+import NewThreadPage from "./new-thread";
 
 export default async function Home({
   params,
@@ -8,7 +7,5 @@ export default async function Home({
 }) {
   const { spaceId } = await params;
 
-  const newThread = await createThreadWithoutInput(spaceId);
-
-  redirect(`/${spaceId}/thread/${newThread.id}`);
+  return <NewThreadPage spaceId={spaceId} />;
 }

@@ -1,69 +1,91 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { FormValues } from "./input-form.schema";
-import {
-  prefetchThreadQuery,
-  useCreateThread,
-  useThreads,
-} from "@/lib/hooks/use-thread-queries";
-import { useRouter } from "next/navigation";
 import ThreadDisplay from "@/components/ThreadDisplay";
-import { useQueryClient } from "@tanstack/react-query";
 import UserInput from "./user-input";
+import { useChat } from "@ai-sdk/react";
+import { createIdGenerator } from "ai";
+import { createThread } from "@/lib/actions/thread/create-thread";
+import { useRouter } from "next/navigation";
+import { useInvalidListThreadQuery } from "@/lib/hooks/use-thread-queries";
 
 interface NewThreadPageProps {
   spaceId: string;
 }
 
 export default function NewThreadPage(props: NewThreadPageProps) {
-  const { data: threads } = useThreads(props.spaceId);
-  const queryClient = useQueryClient();
-  const [hasNewThread, setHasNewThread] = useState(false);
-
-  const createThreadMutation = useCreateThread();
   const router = useRouter();
+  const invalidListThreadQuery = useInvalidListThreadQuery(props.spaceId);
+
+  const { messages, append, setMessages } = useChat({
+    id: "",
+    initialMessages: [],
+    sendExtraMessageFields: true,
+    generateId: createIdGenerator({
+      prefix: "msgc",
+      separator: "-",
+      size: 16,
+    }),
+    experimental_prepareRequestBody(body) {
+      return {
+        id: body.id,
+        message: body.messages[body.messages.length - 1], // Only send the last message content
+        spaceId: props.spaceId, // Include spaceId in the request body
+      };
+    },
+    fetch: async (input, init) => {
+      if (!init) return;
+
+      const body = JSON.parse(init.body as string);
+      console.log("fetch message", body.message);
+
+      const newThread = await createThread(props.spaceId, body.message);
+      invalidListThreadQuery();
+
+      return new Response("", {
+        status: 200,
+
+        headers: {
+          "X-Thread-ID": newThread.id,
+        },
+      });
+    },
+    onError(error) {
+      console.error("Error in NewThreadPage:", error);
+      // Handle error appropriately, e.g., show a notification or log it
+    },
+    onResponse(response) {
+      setMessages([]);
+
+      router.push(
+        `/${props.spaceId}/thread/${response.headers.get(
+          "X-Thread-ID"
+        )}?new=true`
+      );
+      // Handle response if needed, e.g., update UI or state
+    },
+  });
 
   // Handle form submission with server action
   async function onSubmit(data: FormValues) {
-    let newThreadId: string;
-    try {
-      const newThread = await createThreadMutation.mutateAsync({
-        spaceId: props.spaceId,
-        firstMessage: data.inputField,
-      });
-
-      if (!newThread) {
-        throw new Error("Failed to create new thread");
+    append(
+      {
+        role: "user",
+        content: data.inputField,
+      },
+      {
+        body: {
+          spaceId: props.spaceId,
+        },
       }
-
-      newThreadId = newThread.id;
-
-      await prefetchThreadQuery(queryClient, newThreadId);
-    } catch (error) {
-      console.error("Failed to create new thread:", error);
-
-      return;
-    }
-
-    router.push(`/${props.spaceId}/thread/${newThreadId}`);
+    );
   }
-
-  useEffect(() => {
-    if (!threads || threads.length === 0) {
-      return;
-    }
-
-    if (threads[0].id == "" && threads[0].user == "") {
-      setHasNewThread(true);
-    }
-  }, [threads]);
 
   return (
     <>
-      {hasNewThread ? (
+      {messages.length > 0 ? (
         <div className="w-full overflow-y-auto flex-1 pt-16">
-          <ThreadDisplay className="pb-4" messages={threads?.[0]?.messages} />
+          <ThreadDisplay className="pb-4" messages={messages} />
         </div>
       ) : (
         <div className="text-center text-gray-500 dark:text-gray-400">
