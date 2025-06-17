@@ -34,7 +34,7 @@ export default function NewThreadPage(props: NewThreadPageProps) {
       };
     },
     fetch: async (input, init) => {
-      if (!init) return;
+      if (!init) return new Response("No init provided", { status: 400 });
 
       const body = JSON.parse(init.body as string);
       console.log("fetch message", body.message);
