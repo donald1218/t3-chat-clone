@@ -9,7 +9,6 @@ import { createThread } from "@/lib/actions/thread/create-thread";
 import { useRouter } from "next/navigation";
 import { useInvalidListThreadQuery } from "@/lib/hooks/use-thread-queries";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 
 interface NewThreadPageProps {
   spaceId: string;
@@ -106,9 +105,6 @@ export default function NewThreadPage(props: NewThreadPageProps) {
       )}
 
       <UserInput onSubmit={onSubmit} isSubmitting={isLoading} />
-      <Link href="/voice" prefetch>
-        Voice Assistant
-      </Link>
     </>
   );
 }

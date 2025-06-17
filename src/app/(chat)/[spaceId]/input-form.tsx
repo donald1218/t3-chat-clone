@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUp, ChevronsUpDown } from "lucide-react";
+import { ArrowUp, ChevronsUpDown, MicIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -33,6 +33,7 @@ import { modelSelectionAtom } from "@/lib/store/model-selection";
 import { useEffect, useState } from "react";
 import { Popover, PopoverContent } from "@/components/ui/popover";
 import { PopoverTrigger } from "@radix-ui/react-popover";
+import Link from "next/link";
 
 interface InputFormProps {
   onSubmit: (input: FormValues) => Promise<void>;
@@ -189,6 +190,16 @@ export default function InputForm(props: InputFormProps) {
                       </FormItem>
                     )}
                   />
+
+                  <Link href="/voice">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="rounded-full h-8 w-8"
+                    >
+                      <MicIcon className="h-6 w-6" />
+                    </Button>
+                  </Link>
 
                   <Button
                     type="submit"
