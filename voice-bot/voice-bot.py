@@ -34,8 +34,6 @@ async def entrypoint(ctx: JobContext):
     if _chosen_model is None:
         _chosen_model = "gemma-3-27b-it"
         
-    print("chosen model", _chosen_model)
-
     await session.start(
         room=ctx.room,
         agent=Agent(
@@ -55,4 +53,4 @@ if __name__ == "__main__":
     if _google_api_key is None:
         print("Google API key is required for Google API either via GOOGLE_API_KEY environment variable or api_key parameter")
         sys.exit(0)
-    cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint, api_key=_api_key, api_secret=_api_secret))
+    cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint, ws_url=os.getenv("LIVEKIT_API_URL"), api_key=_api_key, api_secret=_api_secret))
