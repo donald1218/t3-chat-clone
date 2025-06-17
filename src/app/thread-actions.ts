@@ -6,7 +6,7 @@ import { generateThreadTitle, getLLMResponse } from "@/lib/langchain";
 import { defaultModel } from "@/lib/models";
 import { createClient } from "@/lib/supabase/server";
 import { Message, MessageRole } from "@/lib/types";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
 export async function createThreadWithoutInput(spaceId: string) {
@@ -104,10 +104,10 @@ export async function createThread(
   return thread;
 }
 
-export async function deleteThread(id: string) {
+export async function deleteThread(id: string, spaceId: string) {
   const [deletedThread] = await db
     .delete(threadTable)
-    .where(eq(threadTable.id, id))
+    .where(and(eq(threadTable.id, id), eq(threadTable.spaceId, spaceId)))
     .returning();
 
   return deletedThread;

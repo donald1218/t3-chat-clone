@@ -72,24 +72,26 @@ export function useDeleteThread() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: threadKeys.lists(),
-    mutationFn: (id: string) => deleteThread(id),
-    onSuccess: () => {
+    mutationFn: ({ id, spaceId }: { id: string; spaceId: string }) =>
+      deleteThread(id, spaceId),
+    onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: threadKeys.lists(),
+        queryKey: [threadKeys.lists(), data.spaceId],
       });
     },
 
     // Optimistic update for better UX
-    onMutate: async (id) => {
+    onMutate: async ({ id, spaceId }) => {
       // Cancel outgoing refetches for the threads list
       await queryClient.cancelQueries({
-        queryKey: threadKeys.lists(),
+        queryKey: [threadKeys.lists(), spaceId],
       });
 
       // Get current threads data
-      const previousThreads = queryClient.getQueryData<Thread[]>(
-        threadKeys.lists()
-      );
+      const previousThreads = queryClient.getQueryData<Thread[]>([
+        threadKeys.lists(),
+        spaceId,
+      ]);
 
       if (previousThreads) {
         // Create an optimistic update
@@ -98,7 +100,7 @@ export function useDeleteThread() {
         );
 
         // Update the cache with our optimistic value
-        queryClient.setQueryData(threadKeys.lists(), updatedThreads);
+        queryClient.setQueryData([threadKeys.lists(), spaceId], updatedThreads);
 
         // Return context with the previous threads data
         return { previousThreads };
@@ -108,16 +110,21 @@ export function useDeleteThread() {
     },
 
     // If error, roll back to previous state
-    onError: (err, id, context) => {
+    onError: (err, { spaceId }, context) => {
       if (context?.previousThreads) {
-        queryClient.setQueryData(threadKeys.lists(), context.previousThreads);
+        queryClient.setQueryData(
+          [threadKeys.lists(), spaceId],
+          context.previousThreads
+        );
       }
     },
 
     // Always refetch the threads list after mutation
     onSettled: (data) => {
+      if (!data) return;
+
       queryClient.invalidateQueries({
-        queryKey: [threadKeys.lists(), data?.spaceId || ""],
+        queryKey: [threadKeys.lists(), data.spaceId],
       });
     },
   });

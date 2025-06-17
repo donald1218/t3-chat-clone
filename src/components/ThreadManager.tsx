@@ -9,7 +9,7 @@ import { useRouter, useSelectedLayoutSegments } from "next/navigation";
 import { Skeleton } from "./ui/skeleton";
 
 interface ThreadManagerProps {
-  spaceId?: string; // Optional spaceId prop for future use
+  spaceId: string; // Optional spaceId prop for future use
 }
 
 export default function ThreadManager(props: ThreadManagerProps) {
@@ -107,13 +107,20 @@ export default function ThreadManager(props: ThreadManagerProps) {
                     e.stopPropagation(); // Prevent button click from triggering thread switch
                     e.nativeEvent.preventDefault();
 
-                    deleteThreadMutation.mutate(thread.id, {
-                      onSuccess: () => {
-                        if (currentThreadId === thread.id) {
-                          router.push(`/${props.spaceId}`); // Ensure we don't stay on the deleted thread
-                        }
-                      },
-                    });
+                    deleteThreadMutation.mutate(
+                      { id: thread.id, spaceId: props.spaceId },
+                      {
+                        onSuccess: () => {
+                          if (currentThreadId === thread.id) {
+                            router.push(`/${props.spaceId}`); // Ensure we don't stay on the deleted thread
+                          }
+                        },
+
+                        onError: (error) => {
+                          console.error("Error deleting thread:", error);
+                        },
+                      }
+                    );
                   }}
                 >
                   <TrashIcon className="h-4 w-4 text-red-500" />
