@@ -1,39 +1,18 @@
 "use client";
 
-import { ArrowUp, ChevronsUpDown, MicIcon } from "lucide-react";
+import { ArrowUp, MicIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { formSchema, FormValues } from "./input-form.schema";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  getAvailableModelsGroupedByProvider,
-  getModelById,
-  modelProviderToName,
-  ModelType,
-} from "@/lib/models";
 import { useAtom } from "jotai/react";
 import { modelSelectionAtom } from "@/lib/store/model-selection";
-import { useEffect, useState } from "react";
-import { Popover, PopoverContent } from "@/components/ui/popover";
-import { PopoverTrigger } from "@radix-ui/react-popover";
+import { useEffect } from "react";
 import Link from "next/link";
+import ModelSelect from "./model-select";
 
 interface InputFormProps {
   onSubmit: (input: FormValues) => Promise<void>;
@@ -42,7 +21,6 @@ interface InputFormProps {
 
 export default function InputForm(props: InputFormProps) {
   const [selectedModel, setSelectedModel] = useAtom(modelSelectionAtom);
-  const [searchTerm, setSearchTerm] = useState("");
 
   // Initialize the form with validation
   const form = useForm<FormValues>({
@@ -123,70 +101,10 @@ export default function InputForm(props: InputFormProps) {
                     name="model"
                     render={({ field }) => (
                       <FormItem>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button variant="outline" role="combobox">
-                                {field.value
-                                  ? getModelById(field.value.split(":")[1])
-                                      ?.name ?? "Select model"
-                                  : "Select model"}
-
-                                <ChevronsUpDown className="ml-1 h-4 w-4" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-
-                          <PopoverContent className="p-0">
-                            <Command>
-                              <CommandInput
-                                placeholder="Search models..."
-                                value={searchTerm}
-                                onValueChange={setSearchTerm}
-                                className="h-9"
-                              />
-                              <CommandList>
-                                <CommandEmpty>No models found.</CommandEmpty>
-                                {Object.entries(
-                                  getAvailableModelsGroupedByProvider()
-                                )
-                                  .map(([provider, models]) => ({
-                                    provider,
-                                    models: (models as ModelType[]).filter(
-                                      (model: ModelType) =>
-                                        model.name
-                                          .toLowerCase()
-                                          .includes(searchTerm.toLowerCase())
-                                    ),
-                                  }))
-                                  .filter(({ models }) => models.length > 0)
-                                  .map(({ provider, models }) => (
-                                    <CommandGroup
-                                      key={provider}
-                                      heading={modelProviderToName(provider)}
-                                    >
-                                      {(models as ModelType[]).map(
-                                        (model: ModelType) => (
-                                          <CommandItem
-                                            key={`${model.provider}:${model.id}`}
-                                            value={`${model.provider}:${model.id}`}
-                                            onSelect={() => {
-                                              onModelChange(
-                                                `${model.provider}:${model.id}`
-                                              );
-                                              setSearchTerm(""); // Clear search term after selection
-                                            }}
-                                          >
-                                            {model.name}
-                                          </CommandItem>
-                                        )
-                                      )}
-                                    </CommandGroup>
-                                  ))}
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
+                        <ModelSelect
+                          selectedModel={field.value}
+                          onModelChange={onModelChange}
+                        />
                       </FormItem>
                     )}
                   />
