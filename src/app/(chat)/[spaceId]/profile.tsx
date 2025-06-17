@@ -18,7 +18,7 @@ export default function Profile() {
           <CurrentUserAvatar className="hover:ring-2 ring-sidebar-border" />
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent side="bottom" align="start">
+        <DropdownMenuContent side="bottom" align="start" className="!z-40">
           <DropdownMenuItem>
             <Link
               href="/customization"
