@@ -13,7 +13,7 @@ export function ThemeToggleButton() {
       size="icon"
       aria-label="Toggle dark mode"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="ml-2 size-6"
+      className="size-6"
     >
       {theme === "dark" ? (
         <SunIcon className="size-4" />

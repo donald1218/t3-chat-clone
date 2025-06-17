@@ -16,5 +16,5 @@ export async function getUsage(threadId: string, messageId: string) {
     )
     .execute();
 
-  return usage;
+  return usage || null;
 }
