@@ -1,9 +1,6 @@
-import {
-  createThreadWithoutInput,
-  getThread,
-  updateThread,
-} from "@/app/thread-actions";
 import { getSpace } from "@/lib/actions/space/get-space";
+import { getThread } from "@/lib/actions/thread/get-thread";
+import { updateThread } from "@/lib/actions/thread/update-thread";
 import { google } from "@ai-sdk/google";
 import {
   appendClientMessage,
@@ -11,36 +8,11 @@ import {
   createIdGenerator,
   streamText,
 } from "ai";
-import { redirect } from "next/navigation";
-import { z } from "zod";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
-const spaceIdSchema = z.string().min(1, "Space ID is required");
-
 export async function POST(req: Request) {
-  const { message, id, spaceId } = await req.json();
-
-  if (id === "") {
-    const spaceIdResult = spaceIdSchema.safeParse(spaceId);
-    if (!spaceIdResult.success) {
-      return new Response(`Invalid space ID: ${spaceIdResult.error.message}`, {
-        status: 400,
-      });
-    }
-
-    const thread = await createThreadWithoutInput(spaceId);
-
-    if (!thread) {
-      return new Response("Failed to create new thread", { status: 500 });
-    }
-
-    updateThread(thread.id, {
-      messages: [message],
-    });
-
-    redirect(`/${spaceId}/thread/${thread.id}?new=true`);
-  }
+  const { message, id } = await req.json();
 
   const thread = await getThread(id);
   const previousMessages = thread?.messages || [];

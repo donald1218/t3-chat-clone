@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import dynamic from "next/dynamic";
-import { getThread } from "@/app/thread-actions";
+import { getThread } from "@/lib/actions/thread/get-thread";
 
 const Thread = dynamic(() => import("./thread"));
 

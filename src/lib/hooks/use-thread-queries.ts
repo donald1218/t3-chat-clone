@@ -4,13 +4,11 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import {
-  getAllThreads,
-  getThread,
-  deleteThread,
-  getThreadsBySpaceId,
-} from "@/app/thread-actions";
 import { Thread } from "@/db/schema";
+import { deleteThread } from "../actions/thread/delete-thread";
+import { getThread } from "../actions/thread/get-thread";
+import { listThreads } from "../actions/thread/list-threads";
+import { getThreadsBySpaceId } from "../actions/thread/get-thread-by-space-id";
 
 // Query keys for better type safety and organization
 export const threadKeys = {
@@ -25,7 +23,7 @@ export function prefetchThreadQueries(queryClient: QueryClient) {
   // Prefetch all threads
   queryClient.prefetchQuery({
     queryKey: threadKeys.lists(),
-    queryFn: getAllThreads,
+    queryFn: listThreads,
   });
 }
 
