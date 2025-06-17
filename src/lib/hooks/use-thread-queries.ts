@@ -7,15 +7,10 @@ import {
 import {
   getAllThreads,
   getThread,
-  createThread,
-  updateThreadTitle,
   deleteThread,
-  addUserMessageToThread,
   getThreadsBySpaceId,
 } from "@/app/thread-actions";
-import { Message, MessageRole } from "@/lib/types";
 import { Thread } from "@/db/schema";
-import { defaultModel } from "../models";
 
 // Query keys for better type safety and organization
 export const threadKeys = {
@@ -73,94 +68,6 @@ export function useThread(id: string | null) {
   });
 }
 
-// Hook to create a new thread
-export function useCreateThread() {
-  const queryClient = useQueryClient();
-  const queryKeyWithSpaceId = (spaceId: string) => [
-    threadKeys.lists(),
-    spaceId,
-  ];
-
-  return useMutation({
-    mutationKey: threadKeys.lists(),
-    mutationFn: ({
-      spaceId,
-      firstMessage,
-    }: {
-      spaceId: string;
-      firstMessage: string;
-    }) => createThread(spaceId, firstMessage),
-
-    // When the mutation succeeds, invalidate the threads list query
-    onSuccess: (newThread) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeyWithSpaceId(newThread.spaceId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: threadKeys.detail(newThread.id),
-      });
-      return newThread;
-    },
-
-    onMutate: async ({ spaceId, firstMessage }) => {
-      // Cancel outgoing refetches for the threads list
-      await queryClient.cancelQueries({
-        queryKey: queryKeyWithSpaceId(spaceId),
-      });
-
-      // Get current threads data
-      const previousThreads = queryClient.getQueryData<Thread[]>(
-        threadKeys.lists()
-      );
-
-      // Create an optimistic update
-      const newThread: Thread = {
-        id: "",
-        title: "",
-        spaceId: spaceId,
-        messages: [
-          {
-            id: crypto.randomUUID(),
-            role: "user",
-            content: firstMessage,
-            timestamp: Date.now(),
-            metadata: {},
-          } as Message,
-        ],
-        user: "", // Replace with actual user ID if available
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      // Update the cache with our optimistic value
-      queryClient.setQueryData(queryKeyWithSpaceId(spaceId), [
-        newThread,
-        ...(previousThreads || []),
-      ]);
-
-      // Return context with the previous threads data
-      return { previousThreads };
-    },
-
-    // If error, roll back to previous state
-    onError: (err, variables, context) => {
-      if (context?.previousThreads) {
-        queryClient.setQueryData(
-          queryKeyWithSpaceId(context.previousThreads[0].spaceId),
-          context.previousThreads
-        );
-      }
-    },
-
-    // Always refetch the threads list after mutation
-    onSettled: (data) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeyWithSpaceId(data?.spaceId || ""),
-      });
-    },
-  });
-}
-
 export function useDeleteThread() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -211,118 +118,6 @@ export function useDeleteThread() {
     onSettled: (data) => {
       queryClient.invalidateQueries({
         queryKey: [threadKeys.lists(), data?.spaceId || ""],
-      });
-    },
-  });
-}
-
-// Hook to add a message to a thread
-export function useAddMessage() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      threadId,
-      content,
-      model,
-      metadata,
-    }: {
-      threadId: string;
-      content: string;
-      model?: string;
-      metadata?: { [key: string]: unknown };
-    }) => {
-      const result = await addUserMessageToThread(
-        threadId,
-        content,
-        model,
-        metadata
-      );
-
-      return result;
-    },
-    // When the mutation succeeds, update the thread in the cache
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: threadKeys.detail(variables.threadId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: threadKeys.lists(),
-      });
-    },
-    // Optimistic update for better UX
-    onMutate: async ({ threadId, content, model }) => {
-      // Cancel outgoing refetches for the thread
-      await queryClient.cancelQueries({
-        queryKey: threadKeys.detail(threadId),
-      });
-
-      // Get current thread data
-      const previousThread = queryClient.getQueryData<Thread>(
-        threadKeys.detail(threadId)
-      );
-
-      if (previousThread) {
-        // Create an optimistic update
-        const messages = [...(previousThread.messages as Message[])];
-        const newMessage: Message = {
-          id: crypto.randomUUID(),
-          role: "user" as MessageRole,
-          content,
-          timestamp: Date.now(),
-          metadata: {
-            model: model || defaultModel.id,
-          },
-        };
-
-        // Add the new message to the thread
-        const updatedMessages = [...messages, newMessage];
-
-        // Update the cache with our optimistic value
-        queryClient.setQueryData(threadKeys.detail(threadId), {
-          ...previousThread,
-          messages: updatedMessages,
-          updatedAt: new Date(),
-        });
-
-        // Return context with the previous thread data
-        return { previousThread };
-      }
-
-      return { previousThread: null };
-    },
-    // If error, roll back to previous state
-    onError: (err, variables, context) => {
-      if (context?.previousThread) {
-        queryClient.setQueryData(
-          threadKeys.detail(variables.threadId),
-          context.previousThread
-        );
-      }
-    },
-  });
-}
-
-// Hook to update thread title
-export function useUpdateThreadTitle() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      threadId,
-      title,
-    }: {
-      threadId: string;
-      title: string;
-    }) => {
-      return updateThreadTitle(threadId, title);
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: threadKeys.detail(variables.threadId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: threadKeys.lists(),
       });
     },
   });
