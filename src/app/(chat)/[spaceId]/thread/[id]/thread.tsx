@@ -5,7 +5,6 @@ import InputForm from "../../input-form";
 import { FormValues } from "../../input-form.schema";
 import ThreadDisplay from "@/components/ThreadDisplay";
 import { createIdGenerator } from "ai";
-import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { useQueryState } from "nuqs";
 
@@ -15,13 +14,12 @@ interface ThreadProps {
 }
 
 export default function Thread(props: ThreadProps) {
-  const router = useRouter();
   const reloaded = useRef(false);
   const [isNew, setIsNew] = useQueryState("new", {
     parse: (value) => value === "true",
   });
 
-  const { handleSubmit, append, messages, reload } = useChat({
+  const { append, messages, reload } = useChat({
     id: props.threadId,
     initialMessages: props.initialMessages ?? [],
     sendExtraMessageFields: true,

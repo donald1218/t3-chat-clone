@@ -5,7 +5,6 @@ import {
 } from "@/app/thread-actions";
 import { getSpace } from "@/lib/actions/space/get-space";
 import { google } from "@ai-sdk/google";
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import {
   appendClientMessage,
   appendResponseMessages,
