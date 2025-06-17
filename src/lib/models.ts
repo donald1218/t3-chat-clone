@@ -1,3 +1,4 @@
+import { openRouterModels } from "./llm/openrouter";
 import { LLMProvider } from "./types";
 
 // Models available for selection in the chat interface
@@ -24,21 +25,14 @@ export const availableModels: ModelType[] = [
     name: "GPT-4o",
     provider: "openai",
   },
-  {
-    id: "qwen/qwen3-30b-a3b:free",
-    name: "Qwen 3 30B",
-    provider: "openrouter",
-  },
-  {
-    id: "claude-3-haiku",
-    name: "Claude 3 Haiku",
-    provider: "openrouter",
-  },
-  {
-    id: "claude-3-sonnet",
-    name: "Claude 3 Sonnet",
-    provider: "openrouter",
-  },
+  ...openRouterModels.map(
+    (model) =>
+      ({
+        id: model.id,
+        name: model.name,
+        provider: "openrouter",
+      } satisfies ModelType)
+  ),
 ];
 
 export const defaultModel: ModelType = availableModels[0]; // Default model
