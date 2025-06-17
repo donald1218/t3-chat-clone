@@ -1,12 +1,15 @@
 "use client";
 
 import { useCallback, useState, useEffect } from "react";
-import { useDropzone } from "react-dropzone";
+import { Accept, useDropzone } from "react-dropzone";
 import { UploadCloudIcon } from "lucide-react";
+import { toast } from "sonner";
 
 export function GlobalDropzone({
+  accept = { "image/*": [".jpeg", ".png", ".gif", ".webp"] },
   onFileAccepted,
 }: {
+  accept?: Accept;
   onFileAccepted: (file: File[]) => void;
 }) {
   const [isDraggingOverWindow, setIsDraggingOverWindow] = useState(false);
@@ -24,7 +27,12 @@ export function GlobalDropzone({
   const { getRootProps, isDragActive } = useDropzone({
     onDrop,
     multiple: true,
-    // Add any specific file type acceptors if needed, e.g., accept: { 'image/*': ['.jpeg', '.png'] }
+    accept,
+    onDropRejected: (rejectedFiles) => {
+      toast("Some files are not supported", {
+        description: rejectedFiles.map((file) => file.file.name).join(", "),
+      });
+    },
   });
 
   useEffect(() => {
