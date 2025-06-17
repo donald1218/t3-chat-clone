@@ -1,0 +1,38 @@
+services:
+  livekit-server:
+    image: livekit/livekit-server:latest
+    command: ["--dev", "--bind", "0.0.0.0"]
+    ports:
+      - "7880:7880"
+
+  speaches-ai:
+    image: ghcr.io/speaches-ai/speaches:latest-cuda
+    ports:
+      - "8000:8000"
+    volumes:
+      - hf-hub-cache:/home/ubuntu/.cache/huggingface/hub
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+
+  voice-bot:
+    build: .
+    environment:
+      LIVEKIT_API_URL: ws://livekit-server:7880
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
+      LIVEKIT_SECRET: ${LIVEKIT_SECRET}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      SPEACHES_URL: http://speaches-ai:8000/v1
+    depends_on:
+      - livekit-server
+      - speaches-ai
+    restart: always
+
+volumes:
+  hf-hub-cache:
+    external: true
