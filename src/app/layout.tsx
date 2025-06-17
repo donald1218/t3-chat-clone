@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { QueryProvider } from "@/lib/query-provider";
-import { Provider as JotaiProvider } from "jotai";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster } from "@/components/ui/sonner";
+import ClientProviders from "./providers.client";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,17 +26,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <NuqsAdapter>
-          <QueryProvider>
-            <JotaiProvider>
-              {children}
-              <Toaster />
-            </JotaiProvider>
-          </QueryProvider>
+          <ClientProviders>
+            {children}
+            <Toaster />
+          </ClientProviders>
         </NuqsAdapter>
       </body>
     </html>
