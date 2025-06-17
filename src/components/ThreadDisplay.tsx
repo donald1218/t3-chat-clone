@@ -67,9 +67,7 @@ function MessageItem({
     <div
       className={cn(
         "flex flex-col px-4 py-3 rounded-lg",
-        role === "user"
-          ? "bg-blue-50 dark:bg-blue-900/20 ml-8"
-          : "bg-gray-50 dark:bg-gray-800/50 mr-8"
+        role === "user" ? "bg-blue-50 dark:bg-blue-900/20 ml-8" : ""
       )}
     >
       <div className="font-medium mb-1">
