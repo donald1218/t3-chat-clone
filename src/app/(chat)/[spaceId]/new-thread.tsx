@@ -8,7 +8,7 @@ import { createIdGenerator } from "ai";
 import { createThread } from "@/lib/actions/thread/create-thread";
 import { useRouter } from "next/navigation";
 import { useInvalidListThreadQuery } from "@/lib/hooks/use-thread-queries";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface NewThreadPageProps {
   spaceId: string;
@@ -17,8 +17,9 @@ interface NewThreadPageProps {
 export default function NewThreadPage(props: NewThreadPageProps) {
   const router = useRouter();
   const invalidListThreadQuery = useInvalidListThreadQuery(props.spaceId);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { messages, append, setMessages } = useChat({
+  const { messages, append, setMessages, status } = useChat({
     id: "",
     initialMessages: [],
     sendExtraMessageFields: true,
@@ -82,7 +83,13 @@ export default function NewThreadPage(props: NewThreadPageProps) {
 
   useEffect(() => {
     setMessages([]);
-  });
+  }, [setMessages]);
+
+  useEffect(() => {
+    if (status === "streaming" || status === "submitted") {
+      setIsLoading(true);
+    }
+  }, [status]);
 
   return (
     <>
@@ -97,7 +104,7 @@ export default function NewThreadPage(props: NewThreadPageProps) {
         </div>
       )}
 
-      <UserInput onSubmit={onSubmit} />
+      <UserInput onSubmit={onSubmit} isSubmitting={isLoading} />
     </>
   );
 }

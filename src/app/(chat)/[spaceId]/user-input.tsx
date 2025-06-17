@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 
 interface UserInputProps {
   onSubmit: (data: FormValues) => Promise<void>;
+  isSubmitting?: boolean; // Optional prop to control external submission
 }
 
 export default function UserInput(props: UserInputProps) {
@@ -31,7 +32,10 @@ export default function UserInput(props: UserInputProps) {
     <>
       <div className="sticky bottom-4 w-full max-w-3xl mx-auto flex flex-col gap-2">
         <FileStack files={fileStack} onDeleteFile={handleFileDelete} />
-        <InputForm onSubmit={props.onSubmit} />
+        <InputForm
+          onSubmit={props.onSubmit}
+          externalSubmitting={props.isSubmitting}
+        />
       </div>
 
       <GlobalDropzone onFileAccepted={handleFileAccepted} />
