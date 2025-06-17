@@ -198,19 +198,22 @@ class LLMStream(llm.LLMStream):
         request_id = utils.shortuuid()
 
         try:
-            turns_dict, extra_data = self._chat_ctx.to_provider_format(format="google")
+            
+            turns_dict, system_messages = self._chat_ctx.to_provider_format(format="google")
             turns = [types.Content.model_validate(turn) for turn in turns_dict]
             tools_config = None
             if tools_config:
                 self._extra_kwargs["tools"] = tools_config
 
-            config = types.GenerateContentConfig(
-                response_mime_type="text/plain"
-            )
 
+            config = types.GenerateContentConfig(
+                response_mime_type="text/plain",
+            )
+            
+            system_prompts = [{"role": "user", "parts": [{"text": "\n".join(system_messages.system_messages)}]}] 
             stream = await self._client.aio.models.generate_content_stream(
                 model=self._model,
-                contents=cast(types.ContentListUnion, turns),
+                contents=cast(types.ContentListUnion, system_prompts + turns),
                 config=config,
             )
 
@@ -230,6 +233,7 @@ class LLMStream(llm.LLMStream):
                     continue
 
                 for part in response.candidates[0].content.parts:
+                    print(part)
                     chat_chunk = self._parse_part(request_id, part)
                     if chat_chunk is not None:
                         retryable = False

@@ -48,20 +48,20 @@ async def entrypoint(ctx: JobContext):
     session = AgentSession(
         vad=silero.VAD.load(),
         # any combination of STT, LLM, TTS, or realtime API can be used
-        stt=openai.STT(model="Systran/faster-whisper-small.en", base_url="http://localhost:8000/v1", api_key="1234567890"),
-        tts=openai.TTS(model="speaches-ai/Kokoro-82M-v1.0-ONNX", voice="af_heart",speed=1.0, base_url="http://localhost:8000/v1", api_key="1234567890"),
+        stt=openai.STT(model="Systran/faster-distil-whisper-small.en", base_url="http://140.113.208.76:8000/v1", api_key="1234567890"),
+        tts=openai.TTS(model="speaches-ai/Kokoro-82M-v1.0-ONNX", voice="af_heart",speed=1.0, base_url="http://140.113.208.76:8000/v1", api_key="1234567890"),
     )
 
     await session.start(
         room=ctx.room,
         agent=Agent(
-            instructions="You are a friendly voice assistant built by LiveKit.",
+            instructions="You are a friendly voice assistant built by LiveKit. Your output will be in the voice of the user. Formatted output or Emoji are not allowed.",
             llm=LLM(
             model="gemma-3-27b-it",
             api_key=google_api_key,
         )),
     )
-    await session.generate_reply(instructions="greet the user and ask about their day")
+    await session.generate_reply(instructions="greet the user and ask about their day after receiving '.' from the user")
     
 
 if __name__ == "__main__":
