@@ -3,6 +3,7 @@ import {
   jsonb,
   pgTable,
   text,
+  integer,
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
@@ -52,7 +53,23 @@ export const byokTable = pgTable("byok", {
   config: jsonb("config").$type<BYOKConfig>().notNull(),
 });
 
+export const usageTable = pgTable(
+  "usage",
+  {
+    threadId: uuid("thread_id")
+      .notNull()
+      .references(() => threadTable.id, { onDelete: "cascade" }),
+    messageId: text("message_id").notNull(),
+    tokenNumber: integer("token_number").notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => [
+    index("usage_thread_message_idx").on(table.threadId, table.messageId),
+  ]
+);
+
 export type Space = InferSelectModel<typeof spaceTable>;
 export type Thread = InferSelectModel<typeof threadTable>;
 export type Preferences = InferSelectModel<typeof preferencesTable>;
 export type BYOK = InferSelectModel<typeof byokTable>;
+export type Usage = InferSelectModel<typeof usageTable>;

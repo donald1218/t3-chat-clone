@@ -4,14 +4,17 @@ import LlmResponseDisplay from "./LlmResponseDisplay";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef } from "react";
 import type { UIMessage } from "ai";
+import { useUsageQueries } from "@/lib/hooks/use-usage-queries";
 
 interface ThreadDisplayProps {
   className?: string;
+  threadId?: string; // Optional thread ID for context
   messages?: UIMessage[];
 }
 
 export default function ThreadDisplay({
   className,
+  threadId,
   messages,
 }: ThreadDisplayProps) {
   // Create a ref for the messages container
@@ -42,7 +45,7 @@ export default function ThreadDisplay({
   return (
     <div className={cn("flex flex-col space-y-4", className)}>
       {messages.map((message) => (
-        <MessageItem key={message.id} message={message} />
+        <MessageItem key={message.id} threadId={threadId} message={message} />
       ))}
       {/* Invisible div at the end to scroll to */}
       <div ref={messagesEndRef} />
@@ -50,8 +53,15 @@ export default function ThreadDisplay({
   );
 }
 
-function MessageItem({ message }: { message: UIMessage }) {
-  const { role, content } = message;
+function MessageItem({
+  threadId,
+  message,
+}: {
+  threadId?: string;
+  message: UIMessage;
+}) {
+  const { id, role, content } = message;
+  const { data: usage } = useUsageQueries(threadId, id);
 
   return (
     <div
@@ -72,9 +82,11 @@ function MessageItem({ message }: { message: UIMessage }) {
         <div className="whitespace-pre-wrap">{content}</div>
       )}
 
-      {/* <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 self-end">
-        {message.createdAt && new Date(message.createdAt).toLocaleTimeString()}
-      </div> */}
+      {usage && (
+        <div className="text-xs text-right text-gray-500 mt-1">
+          {usage.tokenNumber} tokens used
+        </div>
+      )}
     </div>
   );
 }

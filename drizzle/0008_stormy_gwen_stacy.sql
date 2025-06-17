@@ -1,0 +1,1 @@
+ALTER TABLE "usage" ALTER COLUMN "message_id" SET DATA TYPE text;

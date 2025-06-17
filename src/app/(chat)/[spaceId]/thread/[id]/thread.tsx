@@ -59,7 +59,11 @@ export default function Thread(props: ThreadProps) {
     <>
       {/* Thread display showing conversation history */}
       <div className="w-full overflow-y-auto flex-1 pt-16">
-        <ThreadDisplay className="pb-4" messages={messages} />
+        <ThreadDisplay
+          className="pb-4"
+          threadId={props.threadId}
+          messages={messages}
+        />
       </div>
 
       <div className="sticky bottom-4 w-full max-w-3xl mx-auto">

@@ -2,6 +2,7 @@ import { getUserKeys } from "@/lib/actions/byok/get-user-keys";
 import { getSpace } from "@/lib/actions/space/get-space";
 import { getThread } from "@/lib/actions/thread/get-thread";
 import { updateThread } from "@/lib/actions/thread/update-thread";
+import { recordMessageTokenUsage } from "@/lib/actions/usage/record-message-token-usage";
 import { LlmProviderRegistryBuilder } from "@/lib/llm/registry";
 import {
   appendClientMessage,
@@ -54,13 +55,23 @@ export async function POST(req: Request) {
     model: chatModel,
     system: space?.prompt || "You are a helpful t3 chat assistant.",
     messages,
-    async onFinish({ response }) {
+    async onFinish({ response, usage }) {
       await updateThread(id, {
         messages: appendResponseMessages({
           messages,
           responseMessages: response.messages,
         }),
       });
+
+      const lastResponseMessage =
+        response.messages[response.messages.length - 1];
+
+      await recordMessageTokenUsage(id, message.id, usage.promptTokens);
+      await recordMessageTokenUsage(
+        id,
+        lastResponseMessage.id,
+        usage.completionTokens
+      );
     },
     async onError(error) {
       console.error("Error during streaming:", error);
