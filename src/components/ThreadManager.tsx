@@ -1,11 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  useCreateThread,
-  useDeleteThread,
-  useThreads,
-} from "@/lib/hooks/use-thread-queries";
+import { useDeleteThread, useThreads } from "@/lib/hooks/use-thread-queries";
 import { Thread } from "@/db/schema";
 import { PlusIcon, TrashIcon } from "lucide-react";
 import Link from "next/link";
@@ -30,7 +26,6 @@ export default function ThreadManager(props: ThreadManagerProps) {
   const { data: threads = [], isLoading } = useThreads(props.spaceId || "");
 
   // Use mutation hook for creating threads
-  const createThreadMutation = useCreateThread();
   const deleteThreadMutation = useDeleteThread();
 
   // Format date for display
@@ -73,7 +68,7 @@ export default function ThreadManager(props: ThreadManagerProps) {
         </div>
       ) : (
         <div className="space-y-2 mt-2">
-          {createThreadMutation.isPending && (
+          {isLoading && (
             <div className="text-left py-2 px-3 text-sm text-gray-500">
               <Skeleton className="w-48 h-4 bg-gray-300" />
               <Skeleton className="w-24 h-4 mt-2 bg-gray-300" />
