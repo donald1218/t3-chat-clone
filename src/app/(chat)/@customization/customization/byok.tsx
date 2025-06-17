@@ -47,7 +47,7 @@ function transformDefaultValues(currentValues?: BYOK[] | null) {
         case "anthropic":
           acc.anthropicApiKey = key.config.apiKey;
           break;
-        case "google-gemini":
+        case "google":
           acc.googleGeminiApiKey = key.config.apiKey;
           break;
         case "openrouter":
@@ -143,7 +143,7 @@ export default function BYOKTab() {
 
     if (data.googleGeminiApiKey) {
       addKey({
-        provider: "google-gemini",
+        provider: "google",
         config: {
           apiKey: data.googleGeminiApiKey,
         },

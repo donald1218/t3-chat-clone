@@ -44,7 +44,7 @@ export async function getChatModel(modelId: string = "gemma-3n-e4b-it") {
         anthropicKey:
           configs.find((c) => c.provider === "anthropic")?.config || null,
         googleGemeniKey:
-          configs.find((c) => c.provider === "google-gemini")?.config || null,
+          configs.find((c) => c.provider === "google")?.config || null,
         openRouterKey:
           configs.find((c) => c.provider === "openrouter")?.config || null,
       };

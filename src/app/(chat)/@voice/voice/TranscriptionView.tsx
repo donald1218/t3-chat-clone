@@ -13,10 +13,10 @@ export default function TranscriptionView() {
   }, [combinedTranscriptions]);
 
   return (
-    <div className="relative h-[200px] w-[512px] max-w-[90vw] mx-auto">
+    <div className="relative h-[200px] w-[512px] max-w-[90vw] mx-auto bg-transparent">
       {/* Fade-out gradient mask */}
-      <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-[var(--lk-bg)] to-transparent z-10 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[var(--lk-bg)] to-transparent z-10 pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-white/30 to-transparent z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white/30 to-transparent z-10 pointer-events-none" />
 
       {/* Scrollable content */}
       <div
@@ -30,7 +30,7 @@ export default function TranscriptionView() {
             className={
               segment.role === "assistant"
                 ? "p-2 self-start fit-content"
-                : "bg-gray-800 rounded-md p-2 self-end fit-content"
+                : "bg-primary text-white rounded-md p-2 self-end fit-content"
             }
           >
             {segment.text}

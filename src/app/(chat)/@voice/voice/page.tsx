@@ -1,4 +1,5 @@
 "use client";
+import "@livekit/components-styles";
 
 import { CloseIcon } from "./CloseButton";
 import { NoAgentNotification } from "./NoAgentNotification";
@@ -26,15 +27,9 @@ export default function VoicePage() {
     //   - A random Participant name
     //   - An Access Token to permit the participant to join the room
     //   - The URL of the LiveKit server to connect to
-    //
-    // In real-world application, you would likely allow the user to specify their
-    // own participant name, and possibly to choose from existing rooms to join.
 
-    const url = new URL(
-      process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ??
-        "/api/connection-details",
-      window.location.origin
-    );
+    const url = new URL("/api/connection-details", window.location.origin);
+    url.searchParams.set("model", "gemini-1.5-flash");
     const response = await fetch(url.toString());
     const connectionDetailsData: ConnectionDetails = await response.json();
 
@@ -42,11 +37,17 @@ export default function VoicePage() {
       connectionDetailsData.serverUrl,
       connectionDetailsData.participantToken
     );
+
     await room.localParticipant.setMicrophoneEnabled(true);
+    //
+    // In real-world application, you would likely allow the user to specify their
+    // own participant name, and possibly to choose from existing rooms to join.
   }, [room]);
 
   useEffect(() => {
     room.on(RoomEvent.MediaDevicesError, onDeviceFailure);
+
+    onConnectButtonClicked();
 
     return () => {
       room.off(RoomEvent.MediaDevicesError, onDeviceFailure);
@@ -54,18 +55,11 @@ export default function VoicePage() {
   }, [room]);
 
   return (
-    <main
-      data-lk-theme="default"
-      className="h-full grid content-center bg-[var(--lk-bg)]"
-    >
-      <RoomContext.Provider value={room}>
-        <div className="lk-room-container max-w-[1024px] w-[90vw] mx-auto max-h-[90vh]">
-          <SimpleVoiceAssistant
-            onConnectButtonClicked={onConnectButtonClicked}
-          />
-        </div>
-      </RoomContext.Provider>
-    </main>
+    <RoomContext.Provider value={room}>
+      <div className="lk-room-container max-w-[1024px] w-[90vw] mx-auto max-h-[90vh]">
+        <SimpleVoiceAssistant onConnectButtonClicked={onConnectButtonClicked} />
+      </div>
+    </RoomContext.Provider>
   );
 }
 
@@ -84,15 +78,7 @@ function SimpleVoiceAssistant(props: { onConnectButtonClicked: () => void }) {
             transition={{ duration: 0.3, ease: [0.09, 1.04, 0.245, 1.055] }}
             className="grid items-center justify-center h-full"
           >
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-              className="uppercase px-4 py-2 bg-white text-black rounded-md"
-              onClick={() => props.onConnectButtonClicked()}
-            >
-              Start a conversation
-            </motion.button>
+            Waiting for connection...
           </motion.div>
         ) : (
           <motion.div
@@ -156,7 +142,7 @@ function ControlBar(props: { onConnectButtonClicked: () => void }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, top: "-10px" }}
             transition={{ duration: 1, ease: [0.09, 1.04, 0.245, 1.055] }}
-            className="uppercase absolute left-1/2 -translate-x-1/2 px-4 py-2 bg-white text-black rounded-md"
+            className="uppercase absolute left-1/2 -translate-x-1/2 px-4 py-2 rounded-md"
             onClick={() => props.onConnectButtonClicked()}
           >
             Start a conversation
