@@ -8,6 +8,7 @@ import { createIdGenerator } from "ai";
 import { createThread } from "@/lib/actions/thread/create-thread";
 import { useRouter } from "next/navigation";
 import { useInvalidListThreadQuery } from "@/lib/hooks/use-thread-queries";
+import { useEffect } from "react";
 
 interface NewThreadPageProps {
   spaceId: string;
@@ -55,8 +56,6 @@ export default function NewThreadPage(props: NewThreadPageProps) {
       // Handle error appropriately, e.g., show a notification or log it
     },
     onResponse(response) {
-      setMessages([]);
-
       router.push(
         `/${props.spaceId}/thread/${response.headers.get(
           "X-Thread-ID"
@@ -80,6 +79,10 @@ export default function NewThreadPage(props: NewThreadPageProps) {
       }
     );
   }
+
+  useEffect(() => {
+    setMessages([]);
+  });
 
   return (
     <>
