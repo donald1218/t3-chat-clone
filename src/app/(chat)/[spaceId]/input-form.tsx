@@ -79,14 +79,14 @@ export default function InputForm(props: InputFormProps) {
           name="inputField"
           render={({ field }) => (
             <FormItem>
-              <div className="flex flex-col rounded-sm border overflow-hidden pb-1 p-2 max-h-[300px] bg-white">
+              <div className="flex flex-col rounded-sm border overflow-hidden pb-1 p-2 max-h-[300px]">
                 <Textarea
                   {...field}
                   disabled={
                     form.formState.isSubmitting || props.externalSubmitting
                   }
                   placeholder="Type here..."
-                  className="border-0 shadow-none px-1 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-y-auto min-h-[60px]"
+                  className="dark:bg-transparent border-0 shadow-none px-1 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-y-auto min-h-[60px]"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
