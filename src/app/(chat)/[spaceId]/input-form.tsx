@@ -129,7 +129,10 @@ export default function InputForm(props: InputFormProps) {
                                   {modelProviderToName(provider)}
                                 </SelectLabel>
                                 {models.map((model) => (
-                                  <SelectItem key={model.id} value={model.id}>
+                                  <SelectItem
+                                    key={`${model.provider}:${model.id}`}
+                                    value={`${model.provider}:${model.id}`}
+                                  >
                                     {model.name}
                                   </SelectItem>
                                 ))}

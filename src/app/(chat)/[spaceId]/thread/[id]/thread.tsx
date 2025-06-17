@@ -5,8 +5,10 @@ import InputForm from "../../input-form";
 import { FormValues } from "../../input-form.schema";
 import ThreadDisplay from "@/components/ThreadDisplay";
 import { createIdGenerator } from "ai";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useQueryState } from "nuqs";
+import { useAtom } from "jotai/react";
+import { modelSelectionAtom } from "@/lib/store/model-selection";
 
 interface ThreadProps {
   threadId: string;
@@ -14,7 +16,7 @@ interface ThreadProps {
 }
 
 export default function Thread(props: ThreadProps) {
-  const reloaded = useRef(false);
+  const [selectedModel] = useAtom(modelSelectionAtom);
   const [isNew, setIsNew] = useQueryState("new", {
     parse: (value) => value === "true",
   });
@@ -31,6 +33,7 @@ export default function Thread(props: ThreadProps) {
     experimental_prepareRequestBody(body) {
       return {
         id: body.id,
+        model: selectedModel, // Use the selected model from the atom
         message: body.messages[body.messages.length - 1], // Only send the last message content
       };
     },
@@ -45,9 +48,8 @@ export default function Thread(props: ThreadProps) {
   }
 
   useEffect(() => {
-    if (!reloaded.current && isNew) {
+    if (isNew) {
       // If this is a new thread, reload to fetch the initial ai response
-      reloaded.current = true; // Prevent infinite reload loop
       setIsNew(false); // Reset the new state after reloading
       reload();
     }

@@ -15,11 +15,7 @@ export interface Message {
   };
 }
 
-export type LLMProvider =
-  | "openai"
-  | "anthropic"
-  | "google-gemini"
-  | "openrouter";
+export type LLMProvider = "openai" | "anthropic" | "google" | "openrouter";
 
 export interface BYOKOpenAIConfig {
   apiKey: string;

@@ -1,7 +1,8 @@
+import { getUserKeys } from "@/lib/actions/byok/get-user-keys";
 import { getSpace } from "@/lib/actions/space/get-space";
 import { getThread } from "@/lib/actions/thread/get-thread";
 import { updateThread } from "@/lib/actions/thread/update-thread";
-import { google } from "@ai-sdk/google";
+import { LlmProviderRegistryBuilder } from "@/lib/llm/registry";
 import {
   appendClientMessage,
   appendResponseMessages,
@@ -12,7 +13,7 @@ import {
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 export async function POST(req: Request) {
-  const { message, id } = await req.json();
+  const { id, message, model } = await req.json();
 
   const thread = await getThread(id);
   const previousMessages = thread?.messages || [];
@@ -22,9 +23,29 @@ export async function POST(req: Request) {
   });
 
   const space = await getSpace(thread.spaceId);
+  const byok = await getUserKeys(space.userId);
+  const registryBuilder = new LlmProviderRegistryBuilder();
+  for (const key of byok ?? []) {
+    switch (key.provider) {
+      case "openai":
+        registryBuilder.withOpenAI({ apiKey: key.config.apiKey });
+        break;
+      case "anthropic":
+        registryBuilder.withAnthropic({ apiKey: key.config.apiKey });
+        break;
+      case "google":
+        registryBuilder.withGoogleGemini({ apiKey: key.config.apiKey });
+        break;
+      case "openrouter":
+        registryBuilder.withOpenRouter({ apiKey: key.config.apiKey });
+        break;
+      default:
+        console.warn(`Unknown provider: ${key.provider}`);
+    }
+  }
+  const registry = registryBuilder.build();
 
-  // TODO: implement model registry
-  const chatModel = google("gemini-1.5-flash");
+  const chatModel = registry.languageModel(model);
   if (!chatModel) {
     return new Response("Model not found", { status: 404 });
   }

@@ -1,15 +1,17 @@
+import { LLMProvider } from "./types";
+
 // Models available for selection in the chat interface
 export type ModelType = {
   id: string;
   name: string;
-  provider: "google" | "openai" | "openrouter";
+  provider: LLMProvider;
 };
 
 // Available models
 export const availableModels: ModelType[] = [
   {
-    id: "gemma-3n-e4b-it",
-    name: "Gemma 3n",
+    id: "gemini-1.5-flash",
+    name: "Gemini 1.5 Flash",
     provider: "google",
   },
   {
