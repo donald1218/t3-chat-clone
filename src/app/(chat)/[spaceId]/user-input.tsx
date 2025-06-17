@@ -38,7 +38,10 @@ export default function UserInput(props: UserInputProps) {
         />
       </div>
 
-      <GlobalDropzone onFileAccepted={handleFileAccepted} />
+      <GlobalDropzone
+        onFileAccepted={handleFileAccepted}
+        accept={{ "image/*": [".jpeg", ".png", ".gif", ".webp"] }}
+      />
     </>
   );
 }

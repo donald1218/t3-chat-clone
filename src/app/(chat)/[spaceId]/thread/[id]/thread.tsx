@@ -1,7 +1,6 @@
 "use client";
 
 import { type Message, useChat } from "@ai-sdk/react";
-import InputForm from "../../input-form";
 import { FormValues } from "../../input-form.schema";
 import ThreadDisplay from "@/components/ThreadDisplay";
 import { createIdGenerator } from "ai";
@@ -9,6 +8,7 @@ import { useEffect } from "react";
 import { useQueryState } from "nuqs";
 import { useAtom } from "jotai/react";
 import { modelSelectionAtom } from "@/lib/store/model-selection";
+import UserInput from "../../user-input";
 
 interface ThreadProps {
   threadId: string;
@@ -21,7 +21,7 @@ export default function Thread(props: ThreadProps) {
     parse: (value) => value === "true",
   });
 
-  const { append, messages, reload } = useChat({
+  const { append, messages, reload, status } = useChat({
     id: props.threadId,
     initialMessages: props.initialMessages ?? [],
     sendExtraMessageFields: true,
@@ -66,9 +66,10 @@ export default function Thread(props: ThreadProps) {
         />
       </div>
 
-      <div className="sticky bottom-4 w-full max-w-3xl mx-auto">
-        <InputForm onSubmit={onSubmit} />
-      </div>
+      <UserInput
+        onSubmit={onSubmit}
+        isSubmitting={status === "submitted" || status === "streaming"}
+      />
     </>
   );
 }
