@@ -9,6 +9,7 @@ import { deleteThread } from "../actions/thread/delete-thread";
 import { getThread } from "../actions/thread/get-thread";
 import { listThreads } from "../actions/thread/list-threads";
 import { getThreadsBySpaceId } from "../actions/thread/get-thread-by-space-id";
+import { updateThread } from "../actions/thread/update-thread";
 
 // Query keys for better type safety and organization
 export const threadKeys = {
@@ -120,6 +121,63 @@ export function useDeleteThread() {
     // Always refetch the threads list after mutation
     onSettled: (data) => {
       if (!data) return;
+
+      queryClient.invalidateQueries({
+        queryKey: [threadKeys.lists(), data.spaceId],
+      });
+    },
+  });
+}
+
+export function useUpdateThread() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: threadKeys.lists(),
+    mutationFn: updateThread,
+
+    // Optimistic update for better UX
+    onMutate: async ({ threadId, updates }) => {
+      // Cancel outgoing refetches for the threads list
+      await queryClient.cancelQueries({
+        queryKey: [threadKeys.lists(), updates.spaceId],
+      });
+
+      // Get current thread data
+      const previousThread = queryClient.getQueryData<Thread>(
+        threadKeys.detail(threadId)
+      );
+
+      if (previousThread) {
+        // Create an optimistic update
+        const updatedThread = { ...previousThread, ...updates };
+
+        // Update the cache with our optimistic value
+        queryClient.setQueryData(threadKeys.detail(threadId), updatedThread);
+
+        // Return context with the previous thread data
+        return { previousThread };
+      }
+
+      return { previousThread: null };
+    },
+
+    // If error, roll back to previous state
+    onError: (err, { threadId }, context) => {
+      if (context?.previousThread) {
+        queryClient.setQueryData(
+          threadKeys.detail(threadId),
+          context.previousThread
+        );
+      }
+    },
+
+    // Always refetch the thread after mutation
+    onSettled: (data) => {
+      if (!data) return;
+
+      queryClient.invalidateQueries({
+        queryKey: threadKeys.detail(data.id),
+      });
 
       queryClient.invalidateQueries({
         queryKey: [threadKeys.lists(), data.spaceId],
