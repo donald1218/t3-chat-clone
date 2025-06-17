@@ -19,7 +19,6 @@ import {
   modelProviderToName,
   ModelType,
 } from "@/lib/models";
-import { ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 
 interface ModelSelectProps {
@@ -37,13 +36,16 @@ export default function ModelSelect({
     <Popover>
       <PopoverTrigger asChild>
         <FormControl>
-          <Button variant="outline" role="combobox">
+          <Button
+            variant="ghost"
+            size="sm"
+            role="combobox"
+            className="hover:bg-accent/30"
+          >
             {selectedModel
               ? getModelById(selectedModel.split(":")[1])?.name ??
                 "Select model"
               : "Select model"}
-
-            <ChevronsUpDown className="ml-1 h-4 w-4" />
           </Button>
         </FormControl>
       </PopoverTrigger>
