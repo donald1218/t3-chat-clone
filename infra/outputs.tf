@@ -10,5 +10,5 @@ output "voice_bot_vm_name" {
 
 output "speaches_ai_url" {
   description = "The URL of the deployed Speaches AI Cloud Run service."
-  value       = google_cloud_run_service.speaches_ai.status[0].url
+  value       = google_cloud_run_v2_service.speaches_ai.uri
 }

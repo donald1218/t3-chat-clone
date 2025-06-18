@@ -103,53 +103,54 @@ resource "docker_registry_image" "frontend" {
 }
 
 
-resource "google_cloud_run_service" "speaches_ai" {
+resource "google_cloud_run_v2_service" "speaches_ai" {
   name     = "speaches-ai"
   location = var.region
 
   template {
-    spec {
-      containers {
-        image = "${google_artifact_registry_repository.ghcr_remote.location}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.ghcr_remote.repository_id}/speaches-ai/speaches:latest-cpu"
-        resources {
-          limits = {
-            memory = "8Gi"
-            cpu    = "4"
-          }
-        }
-        ports {
-          container_port = 8000
-        }
+    containers {
+      image = "${google_artifact_registry_repository.ghcr_remote.location}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.ghcr_remote.repository_id}/speaches-ai/speaches:latest-cuda"
 
-        volume_mounts {
-          name       = "hf-hub-cache"
-          mount_path = "/home/ubuntu/.cache/huggingface/hub"
-
+      resources {
+        limits = {
+          memory           = "16Gi"
+          cpu              = "4"
+          "nvidia.com/gpu" = "1"
         }
-        # NOTE: Cloud Run does not support GPU or persistent volumes. This service downloads model to /tmp at startup.
       }
 
-      volumes {
-        name = "hf-hub-cache"
-        csi {
-          driver    = "gcsfuse.run.googleapis.com"
-          read_only = false
-          volume_attributes = {
-            bucketName = google_storage_bucket.hf_hub_cache.name
-          }
-        }
+
+      ports {
+        container_port = 8000
+      }
+
+      volume_mounts {
+        name       = "hf-hub-cache"
+        mount_path = "/home/ubuntu/.cache/huggingface/hub"
+      }
+      # NOTE: Cloud Run does not support GPU or persistent volumes. This service downloads model to /tmp at startup.
+    }
+
+    node_selector {
+      accelerator = "nvidia-l4"
+    }
+
+    gpu_zonal_redundancy_disabled = true
+
+    volumes {
+      name = "hf-hub-cache"
+      gcs {
+        bucket    = google_storage_bucket.hf_hub_cache.name
+        read_only = false
       }
     }
   }
-  traffic {
-    percent         = 100
-    latest_revision = true
-  }
 }
 
-resource "google_cloud_run_service_iam_member" "speaches_noauth" {
-  service  = google_cloud_run_service.speaches_ai.name
-  location = google_cloud_run_service.speaches_ai.location
+resource "google_cloud_run_v2_service_iam_member" "speaches_noauth" {
+  project  = google_cloud_run_v2_service.speaches_ai.project
+  location = google_cloud_run_v2_service.speaches_ai.location
+  name     = google_cloud_run_v2_service.speaches_ai.name
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
@@ -199,7 +200,7 @@ resource "google_compute_instance" "voice_bot_vm" {
       -e LIVEKIT_API_KEY='${var.livekit_api_key}' \
       -e LIVEKIT_SECRET='${var.livekit_secret}' \
       -e GOOGLE_API_KEY='${var.google_api_key}' \
-      -e SPEACHES_URL='${google_cloud_run_service.speaches_ai.status[0].url}/v1' \
+      -e SPEACHES_URL='${google_cloud_run_v2_service.speaches_ai.uri}/v1' \
       ${google_artifact_registry_repository.voice_bot_repo.location}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.voice_bot_repo.repository_id}/voice-bot:${local.image_tag}
   EOT
 }
@@ -299,4 +300,12 @@ resource "google_cloud_run_service_iam_member" "nextjs_server_noauth" {
   location = google_cloud_run_service.nextjs_server.location
   role     = "roles/run.invoker"
   member   = "allUsers"
+}
+
+resource "null_resource" "speaches_ai_model_download" {
+  depends_on = [google_cloud_run_v2_service.speaches_ai]
+
+  provisioner "local-exec" {
+    command = "bash ${path.module}/model_download.sh ${google_cloud_run_v2_service.speaches_ai.uri}/v1"
+  }
 }
