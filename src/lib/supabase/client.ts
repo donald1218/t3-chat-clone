@@ -1,8 +1,8 @@
 import { createBrowserClient } from "@supabase/ssr";
-import { getSupabaseKeys } from "./key";
+import { getSupabaseKeysAction } from "./key";
 
 export async function createClient() {
-  const keys = await getSupabaseKeys();
+  const keys = await getSupabaseKeysAction();
 
   return createBrowserClient(keys.supabaseUrl, keys.supabaseAnonKey);
 }

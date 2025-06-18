@@ -1,0 +1,12 @@
+.devcontainer
+.git*
+.vscode
+.next
+
+node_modules
+drizzle
+infra
+scripts
+voice-bot
+polyfill
+.env*

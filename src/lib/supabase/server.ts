@@ -1,12 +1,19 @@
-import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { getSupabaseKeys } from "./key";
 
 export async function createClient() {
-  const keys = await getSupabaseKeys();
+  const { createServerClient } = await import("@supabase/ssr");
   const cookieStore = await cookies();
 
-  return createServerClient(keys.supabaseUrl, keys.supabaseAnonKey, {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+      "Supabase URL and Anon Key must be set in environment variables."
+    );
+  }
+
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();

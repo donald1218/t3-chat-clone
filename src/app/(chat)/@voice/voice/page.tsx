@@ -13,7 +13,7 @@ import {
   VoiceAssistantControlBar,
   useVoiceAssistant,
 } from "@livekit/components-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { Room, RoomEvent } from "livekit-client";
 import { useCallback, useEffect, useState } from "react";
 import type { ConnectionDetails } from "@/app/api/connection-details/route";

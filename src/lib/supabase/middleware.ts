@@ -1,15 +1,21 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { getSupabaseKeys } from "./key";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
 
-  const keys = await getSupabaseKeys();
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
-  const supabase = createServerClient(keys.supabaseUrl, keys.supabaseAnonKey, {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+      "Supabase URL and Anon Key must be set in environment variables."
+    );
+  }
+
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();

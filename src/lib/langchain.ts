@@ -94,7 +94,8 @@ export async function getChatModel(modelId: string = "gemma-3n-e4b-it") {
 export async function streamingLLMResponse(input: string, modelId?: string) {
   try {
     const chatModel = await getChatModel(modelId);
-    const chain = chatModel.pipe(new StringOutputParser());
+    const outputParser = new StringOutputParser();
+    const chain = chatModel.pipe(outputParser);
     const stream = await chain.stream(input);
     return stream;
   } catch (error) {

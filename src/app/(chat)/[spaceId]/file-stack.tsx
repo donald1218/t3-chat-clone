@@ -7,7 +7,7 @@ import {
   FileType2,
   FileQuestion,
 } from "lucide-react"; // Import Trash2 icon
-import { motion, PanInfo } from "framer-motion";
+import { motion, PanInfo } from "motion/react";
 import { useState } from "react"; // Import useState
 import {
   Carousel,
