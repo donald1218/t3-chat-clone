@@ -61,17 +61,28 @@ export default function Thread(props: ThreadProps) {
       // If this is a new thread, reload to fetch the initial ai response
       setIsNew(false); // Reset the new state after reloading
       reload();
+
+      const intervalId = setInterval(() => {
+        if (status === "submitted" || status === "streaming") {
+          // If the thread is still being processed, keep checking
+          return;
+        }
+
+        if (status === "ready") {
+          // If the thread is ready and has only one message, complete the title generation
+          complete(messages.map((msg) => msg.content).join("\n"));
+        }
+
+        clearInterval(intervalId); // Clear the interval once processing is done
+      }, 100);
     }
-  }, [isNew, setIsNew, reload]);
+  }, [isNew, setIsNew, reload, status, messages, complete]);
 
   useEffect(() => {
-    if (status !== "ready") return;
-    if (messages.length !== 2) return;
+    if (status !== "ready" || !completion) {
+      return; // Only update the thread if the status is ready and we have a completion
+    }
 
-    complete(messages.map((msg) => msg.content).join("\n"));
-  }, [messages, complete, status]);
-
-  useEffect(() => {
     // Update the thread with the latest messages when the component mounts
     updateThread({
       threadId: props.threadId,
@@ -79,7 +90,7 @@ export default function Thread(props: ThreadProps) {
         title: completion,
       },
     });
-  }, [props.threadId, completion, updateThread]);
+  }, [props.threadId, completion, updateThread, status]);
 
   return (
     <>
