@@ -45,15 +45,13 @@ export async function signup(formData: SignupFormValues) {
   redirect("/");
 }
 
-export async function signInWithGithub() {
-  console.log("signInWithGithub called");
-
+export async function signInWithGithub({ origin }: { origin: string }) {
   const supabase = await createClient();
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "github",
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+      redirectTo: `${origin}/auth/callback`,
     },
   });
 
