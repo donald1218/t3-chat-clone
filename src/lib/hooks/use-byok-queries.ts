@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserKeys } from "../actions/byok/get-user-keys";
 import { BYOKConfig, LLMProvider } from "../types";
 import { addUserKey } from "../actions/byok/add-user-keys";
@@ -22,6 +22,7 @@ export const useByokUserKeys = () => {
 
 export const useAddByokUserKeys = () => {
   const userId = useCurrentUserId();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationKey: byokKeys.detail(userId),
@@ -32,5 +33,13 @@ export const useAddByokUserKeys = () => {
       provider: LLMProvider;
       config: BYOKConfig;
     }) => addUserKey(userId, provider, config),
+
+    onSettled: () => {
+      // Invalidate the user keys query to refresh the data
+      queryClient.invalidateQueries({
+        queryKey: byokKeys.user(userId),
+      });
+      queryClient.invalidateQueries({ queryKey: ["availableModels"] });
+    },
   });
 };

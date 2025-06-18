@@ -62,6 +62,18 @@ export function modelProviderToName(provider: string): string {
   }
 }
 
+export function groupModelsByProvider(
+  models: ModelType[]
+): Record<string, ModelType[]> {
+  return models.reduce((acc, model) => {
+    if (!acc[model.provider]) {
+      acc[model.provider] = [];
+    }
+    acc[model.provider].push(model);
+    return acc;
+  }, {} as Record<string, ModelType[]>);
+}
+
 export function getAvailableModelsGroupedByProvider(): Record<
   string,
   ModelType[]

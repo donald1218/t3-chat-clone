@@ -53,7 +53,7 @@ export default function VoicePage() {
       room.localParticipant.setMicrophoneEnabled(false);
       room.off(RoomEvent.MediaDevicesError, onDeviceFailure);
     };
-  }, [room]);
+  }, [room, onConnectButtonClicked]);
 
   return (
     <RoomContext.Provider value={room}>

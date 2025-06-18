@@ -10,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { formSchema, FormValues } from "./input-form.schema";
 import { useAtom } from "jotai/react";
 import { modelSelectionAtom } from "@/lib/store/model-selection";
-import { useEffect } from "react";
 import Link from "next/link";
 import ModelSelect from "./model-select";
 

@@ -13,9 +13,10 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
+import { useAvailableModels } from "@/lib/hooks/use-model-queries";
 import {
-  getAvailableModelsGroupedByProvider,
   getModelById,
+  groupModelsByProvider,
   modelProviderToName,
   ModelType,
 } from "@/lib/models";
@@ -31,6 +32,7 @@ export default function ModelSelect({
   onModelChange,
 }: ModelSelectProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const { data: availableModels } = useAvailableModels();
 
   return (
     <Popover>
@@ -59,7 +61,7 @@ export default function ModelSelect({
           />
           <CommandList>
             <CommandEmpty>No models found.</CommandEmpty>
-            {Object.entries(getAvailableModelsGroupedByProvider())
+            {Object.entries(groupModelsByProvider(availableModels || []))
               .map(([provider, models]) => ({
                 provider,
                 models: (models as ModelType[]).filter((model: ModelType) =>
