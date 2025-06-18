@@ -73,6 +73,7 @@ We provide a ready-to-use terraform configuration for deploying this app on [Goo
 ### 🛠 Prerequisites
 
 - [Node.js 18+](https://nodejs.org/) **or** [Bun](https://bun.sh/)
+- [Python 3.10+](https://www.python.org/)
 - [Supabase](https://supabase.com/) project (for database & auth) **or** a self-hosted instance. Make sure to set up OAuth for Google and GitHub.
 - A [LiveKit](https://livekit.io/) project or a self-hosted instance (for voice assistant)
 
