@@ -1,0 +1,14 @@
+# .dockerignore for voice-bot
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+build/
+dist/
+.venv/
+.DS_Store
+.git/
+.gitignore
+infra/
