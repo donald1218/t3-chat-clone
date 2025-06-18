@@ -1,3 +1,6 @@
+import { anthropicModels } from "./llm/anthropic";
+import { googleGeminiModels } from "./llm/google";
+import { openAiModels } from "./llm/openai";
 import { openRouterModels } from "./llm/openrouter";
 import { LLMProvider } from "./types";
 
@@ -10,25 +13,34 @@ export type ModelType = {
 
 // Available models
 export const availableModels: ModelType[] = [
-  {
-    id: "gemini-1.5-flash",
-    name: "Gemini 1.5 Flash",
-    provider: "google",
-  },
-  {
-    id: "openai-gpt-3.5-turbo",
-    name: "GPT-3.5 Turbo",
-    provider: "openai",
-  },
-  {
-    id: "gpt-4o",
-    name: "GPT-4o",
-    provider: "openai",
-  },
+  ...googleGeminiModels.map(
+    (model) =>
+      ({
+        id: `google:${model.id}`,
+        name: model.name,
+        provider: "google",
+      } satisfies ModelType)
+  ),
+  ...openAiModels.map(
+    (model) =>
+      ({
+        id: `openai:${model.id}`,
+        name: model.name,
+        provider: "openai",
+      } satisfies ModelType)
+  ),
+  ...anthropicModels.map(
+    (model) =>
+      ({
+        id: `anthropic:${model.id}`,
+        name: model.name,
+        provider: "anthropic",
+      } satisfies ModelType)
+  ),
   ...openRouterModels.map(
     (model) =>
       ({
-        id: model.id,
+        id: `openrouter:${model.id}`,
         name: model.name,
         provider: "openrouter",
       } satisfies ModelType)
