@@ -30,9 +30,6 @@ export async function getAvailableModels() {
     ["openrouter", process.env.OPENROUTER_API_KEY ? true : false],
   ]);
 
-  console.log("Providers:", enableProviders);
-  console.log("openrouter", process.env.OPENROUTER_API_KEY);
-
   userKeys.forEach((key) => {
     if (key.provider && enableProviders.has(key.provider)) {
       enableProviders.set(key.provider, true);

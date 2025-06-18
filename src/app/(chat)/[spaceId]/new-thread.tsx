@@ -39,7 +39,6 @@ export default function NewThreadPage(props: NewThreadPageProps) {
       if (!init) return new Response("No init provided", { status: 400 });
 
       const body = JSON.parse(init.body as string);
-      console.log("fetch message", body.message);
 
       const newThread = await createThread(props.spaceId, body.message);
       invalidListThreadQuery();

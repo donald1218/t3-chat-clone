@@ -69,16 +69,6 @@ export default function AccountTab() {
   }, [profile, isLoading, form]);
 
   function onSubmit(data: UserProfileCustomizationValues) {
-    // toast({ // Assuming you have a toast component
-    //   title: "You submitted the following values:",
-    //   description: (
-    //     <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-    //       <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-    //     </pre>
-    //   ),
-    // })
-    console.log("Customization data submitted:", data);
-
     updateProfile({
       name: data.name,
       userProfession: data.userProfession,
