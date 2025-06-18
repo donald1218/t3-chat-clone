@@ -9,6 +9,12 @@ variable "region" {
   default     = "us-central1"
 }
 
+variable "gpu_region" {
+  description = "The GCP region for GPU resources."
+  type        = string
+  default     = "us-central1"
+}
+
 variable "livekit_url" {
   description = "WebSocket URL for LiveKit."
   type        = string

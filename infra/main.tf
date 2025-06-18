@@ -32,8 +32,8 @@ locals {
 }
 
 resource "google_storage_bucket" "hf_hub_cache" {
-  name                        = "hf-hub-cache-${var.project_id}"
-  location                    = var.region
+  name                        = "hf-hub-cache-${var.project_id}-${terraform.workspace}"
+  location                    = var.gpu_region
   force_destroy               = true
   uniform_bucket_level_access = true
 }
@@ -56,6 +56,10 @@ resource "google_artifact_registry_repository" "ghcr_remote" {
     common_repository {
       uri = "https://ghcr.io"
     }
+  }
+
+  lifecycle {
+    prevent_destroy = false
   }
 }
 
@@ -105,7 +109,7 @@ resource "docker_registry_image" "frontend" {
 
 resource "google_cloud_run_v2_service" "speaches_ai" {
   name     = "speaches-ai"
-  location = var.region
+  location = var.gpu_region
 
   template {
     containers {
@@ -117,8 +121,9 @@ resource "google_cloud_run_v2_service" "speaches_ai" {
           cpu              = "4"
           "nvidia.com/gpu" = "1"
         }
-      }
 
+        startup_cpu_boost = true
+      }
 
       ports {
         container_port = 8000
@@ -145,6 +150,11 @@ resource "google_cloud_run_v2_service" "speaches_ai" {
       }
     }
   }
+
+  deletion_protection = false
+
+  lifecycle {
+  }
 }
 
 resource "google_cloud_run_v2_service_iam_member" "speaches_noauth" {
@@ -156,7 +166,7 @@ resource "google_cloud_run_v2_service_iam_member" "speaches_noauth" {
 }
 
 resource "google_service_account" "voice_bot_sa" {
-  account_id   = "voice-bot-sa"
+  account_id   = "${terraform.workspace}-voice-bot-sa"
   display_name = "Voice Bot VM Service Account"
 }
 
