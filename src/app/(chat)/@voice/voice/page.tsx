@@ -50,6 +50,7 @@ export default function VoicePage() {
     onConnectButtonClicked();
 
     return () => {
+      room.localParticipant.setMicrophoneEnabled(false);
       room.off(RoomEvent.MediaDevicesError, onDeviceFailure);
     };
   }, [room]);
