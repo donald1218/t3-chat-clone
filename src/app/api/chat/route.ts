@@ -1,8 +1,10 @@
+import { getProfile } from "@/lib/actions/account/get-profile";
 import { getUserKeys } from "@/lib/actions/byok/get-user-keys";
 import { getSpace } from "@/lib/actions/space/get-space";
 import { getThread } from "@/lib/actions/thread/get-thread";
 import { updateThread } from "@/lib/actions/thread/update-thread";
 import { recordMessageTokenUsage } from "@/lib/actions/usage/record-message-token-usage";
+import { SystemPromptBuilder } from "@/lib/llm/prompt";
 import { LlmProviderRegistryBuilder } from "@/lib/llm/registry";
 import {
   appendClientMessage,
@@ -25,6 +27,8 @@ export async function POST(req: Request) {
 
   const space = await getSpace(thread.spaceId);
   const byok = await getUserKeys(space.userId);
+  const userPreferences = await getProfile();
+
   const registryBuilder = new LlmProviderRegistryBuilder();
   for (const key of byok ?? []) {
     switch (key.provider) {
@@ -51,9 +55,16 @@ export async function POST(req: Request) {
     return new Response("Model not found", { status: 404 });
   }
 
+  const systemPrompt = new SystemPromptBuilder()
+    .withSpacePrompt(space?.prompt || "")
+    .withUserCustomInstructions(userPreferences.customInstructions)
+    .withUserName(userPreferences.name)
+    .withUserProfession(userPreferences.profession)
+    .build();
+
   const result = streamText({
     model: chatModel,
-    system: space?.prompt || "You are a helpful t3 chat assistant.",
+    system: systemPrompt,
     messages,
     async onFinish({ response, usage }) {
       await updateThread({
