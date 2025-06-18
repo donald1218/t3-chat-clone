@@ -55,11 +55,6 @@ variable "openrouter_api_key" {
   type        = string
 }
 
-variable "google_generative_ai_api_key" {
-  description = "Google Generative AI API key."
-  type        = string
-}
-
 variable "anthropic_api_key" {
   description = "Anthropic API key."
   type        = string

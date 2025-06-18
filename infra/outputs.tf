@@ -12,3 +12,8 @@ output "speaches_ai_url" {
   description = "The URL of the deployed Speaches AI Cloud Run service."
   value       = google_cloud_run_v2_service.speaches_ai.uri
 }
+
+output "nextjs_server_url" {
+  description = "The URL of the deployed Next.js server."
+  value       = google_cloud_run_service.nextjs_server.status[0].url
+}

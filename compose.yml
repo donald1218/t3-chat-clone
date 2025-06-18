@@ -1,0 +1,15 @@
+include:
+  - ./voice-bot/compose.yaml
+
+services:
+  web:
+    build: .
+    env_file:
+      - .env.local
+    ports:
+      - "3000:3000"
+    depends_on:
+      - supabase
+      - livekit-server
+      - speaches-ai
+    restart: always

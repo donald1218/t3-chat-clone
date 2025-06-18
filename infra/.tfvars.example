@@ -1,0 +1,14 @@
+project_id        = ""
+region            = "us-west1" # Change to your preferred region
+livekit_url       = ""
+livekit_api_key   = ""
+livekit_secret    = ""
+database_url      = "postgres://username:password@localhost:5432/t3-chat-clone" # Postgres Connection String
+supabase_url      = ""
+supabase_anon_key = ""
+
+# LLM API Keys
+google_api_key     = "" # Google Generative AI API Key (Required for voice assitant! We will fix this in the future)
+openai_api_key     = "" # OpenAI API Key
+openrouter_api_key = "" # OpenRouter API Key
+anthropic_api_key  = "" # Anthropic API Key

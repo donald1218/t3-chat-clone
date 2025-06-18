@@ -280,7 +280,7 @@ resource "google_cloud_run_service" "nextjs_server" {
         }
         env {
           name  = "GOOGLE_GENERATIVE_AI_API_KEY"
-          value = var.google_generative_ai_api_key
+          value = var.google_api_key
         }
         env {
           name  = "NODE_ENV"
