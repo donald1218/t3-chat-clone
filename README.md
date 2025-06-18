@@ -32,39 +32,45 @@ We provide a ready-to-use terraform configuration for deploying this app on [Goo
 
 1. Clone this repository
 
-2. Navigate to the `terraform` directory:
+2. Authenticate to Google Cloud
+
+   ```bash
+   gcloud auth application-default login
+   ```
+
+3. Navigate to the `terraform` directory:
 
    ```bash
    cd terraform
    ```
 
-3. Copy the example variables file:
+4. Copy the example variables file:
 
    ```bash
    cp .tfvars.example .tfvars
    ```
 
-4. Edit `.tfvars` and fill in your Google Cloud project details, Supabase credentials, LiveKit configuration, and LLM API keys.
+5. Edit `.tfvars` and fill in your Google Cloud project details, Supabase credentials, LiveKit configuration, and LLM API keys.
 
-5. Initialize Terraform:
+6. Initialize Terraform:
 
    ```bash
    terraform init
    ```
 
-6. View the execution plan:
+7. View the execution plan:
 
    ```bash
    terraform plan -var-file .tfvars
    ```
 
-7. Apply the configuration:
+8. Apply the configuration:
 
    ```bash
    terraform apply -var-file .tfvars --auto-approve
    ```
 
-8. After the deployment is complete, you can access your app at the URL provided in the output.
+9. After the deployment is complete, you can access your app at the URL provided in the output.
 
 ## 🚦 Getting Started
 
