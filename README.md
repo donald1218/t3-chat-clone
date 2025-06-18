@@ -116,6 +116,8 @@ We provide a ready-to-use terraform configuration for deploying this app on [Goo
    LIVEKIT_URL=<your_livekit_url> # e.g., wss://your-livekit-instance.livekit.io
    LIVEKIT_API_KEY=<your_livekit_api_key>
    LIVEKIT_API_SECRET=<your_livekit_api_secret>
+   GOOGLE_API_KEY=<your_google_api_key> # For Google Generative AI
+   SPEACHES_URL=<your_speaches_ai_url>
    ```
 
 3. Install all the dependencies that `voice-bot` requires:
