@@ -1,17 +1,9 @@
-"use client";
-
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { useEffect } from "react";
 
-export default function SignOutPage() {
-  const supabase = createClient();
+export default async function SignOutPage() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
 
-  useEffect(() => {
-    supabase.auth.signOut();
-
-    redirect("/login");
-  });
-
-  return <p>Signing out...</p>;
+  redirect("/login");
 }

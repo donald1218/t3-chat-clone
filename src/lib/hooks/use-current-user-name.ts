@@ -8,7 +8,8 @@ export const useCurrentUserName = () => {
 
   useEffect(() => {
     const fetchProfileName = async () => {
-      const { data, error } = await createClient().auth.getSession();
+      const client = await createClient();
+      const { data, error } = await client.auth.getSession();
       if (error) {
         console.error(error);
       }

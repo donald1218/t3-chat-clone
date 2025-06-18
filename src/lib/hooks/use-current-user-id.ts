@@ -6,7 +6,8 @@ export const useCurrentUserId = () => {
 
   useEffect(() => {
     const fetchUserId = async () => {
-      const { data, error } = await createClient().auth.getSession();
+      const client = await createClient();
+      const { data, error } = await client.auth.getSession();
       if (error) {
         console.error(error);
       }
