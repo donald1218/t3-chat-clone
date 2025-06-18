@@ -4,12 +4,31 @@ terraform {
       source  = "hashicorp/google"
       version = ">= 4.0.0"
     }
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = ">= 3.0.2"
+    }
   }
 }
 
 provider "google" {
   project = var.project_id
   region  = var.region
+}
+
+provider "docker" {
+  registry_auth {
+    address     = "${google_artifact_registry_repository.voice_bot_repo.location}-docker.pkg.dev"
+    config_file = pathexpand("~/.docker/config.json")
+  }
+}
+
+data "external" "git_commit_hash" {
+  program = ["${path.module}/git_commit_hash.sh"]
+}
+
+locals {
+  image_tag = data.external.git_commit_hash.result["commit"]
 }
 
 resource "google_storage_bucket" "hf_hub_cache" {
@@ -39,6 +58,50 @@ resource "google_artifact_registry_repository" "ghcr_remote" {
     }
   }
 }
+
+resource "null_resource" "gcp_docker_auth" {
+  provisioner "local-exec" {
+    command = <<-EOT
+      gcloud auth configure-docker ${google_artifact_registry_repository.voice_bot_repo.location}-docker.pkg.dev --quiet
+      gcloud auth configure-docker ${google_artifact_registry_repository.ghcr_remote.location}-docker.pkg.dev --quiet
+    EOT
+  }
+}
+
+resource "docker_image" "voice_bot" {
+  name = "${google_artifact_registry_repository.voice_bot_repo.location}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.voice_bot_repo.repository_id}/voice-bot:${local.image_tag}"
+  build {
+    context    = "../voice-bot"
+    dockerfile = "../voice-bot/Dockerfile"
+
+    platform = "linux/amd64" # Ensure compatibility with Cloud Run
+  }
+
+  force_remove = true
+}
+
+resource "docker_registry_image" "voice_bot" {
+  name = docker_image.voice_bot.name
+}
+
+
+resource "docker_image" "frontend" {
+  name = "${google_artifact_registry_repository.voice_bot_repo.location}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.voice_bot_repo.repository_id}/nextjs-server:${local.image_tag}"
+  build {
+    context    = ".."
+    dockerfile = "Dockerfile"
+    platform   = "linux/amd64" # Ensure compatibility with Cloud Run
+  }
+
+  force_remove = true
+}
+
+resource "docker_registry_image" "frontend" {
+  depends_on = [docker_image.frontend]
+
+  name = docker_image.frontend.name
+}
+
 
 resource "google_cloud_run_service" "speaches_ai" {
   name     = "speaches-ai"
@@ -97,6 +160,8 @@ resource "google_service_account" "voice_bot_sa" {
 }
 
 resource "google_compute_instance" "voice_bot_vm" {
+  depends_on = [docker_registry_image.voice_bot]
+
   name         = "voice-bot-vm"
   machine_type = "e2-standard-2"
   zone         = "${var.region}-b"
@@ -135,7 +200,7 @@ resource "google_compute_instance" "voice_bot_vm" {
       -e LIVEKIT_SECRET='${var.livekit_secret}' \
       -e GOOGLE_API_KEY='${var.google_api_key}' \
       -e SPEACHES_URL='${google_cloud_run_service.speaches_ai.status[0].url}/v1' \
-      ${google_artifact_registry_repository.voice_bot_repo.location}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.voice_bot_repo.repository_id}/voice-bot:latest
+      ${google_artifact_registry_repository.voice_bot_repo.location}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.voice_bot_repo.repository_id}/voice-bot:${local.image_tag}
   EOT
 }
 
@@ -151,4 +216,87 @@ resource "google_project_iam_member" "voice_bot_sa_artifact_reader" {
   project = var.project_id
   role    = "roles/artifactregistry.reader"
   member  = "serviceAccount:${google_service_account.voice_bot_sa.email}"
+}
+
+resource "google_cloud_run_service" "nextjs_server" {
+  depends_on = [docker_image.frontend, docker_registry_image.frontend]
+
+  name     = "nextjs-server"
+  location = var.region
+
+  template {
+    spec {
+      containers {
+        image = "${google_artifact_registry_repository.voice_bot_repo.location}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.voice_bot_repo.repository_id}/nextjs-server:${local.image_tag}"
+        resources {
+          limits = {
+            memory = "1Gi"
+            cpu    = "1"
+          }
+        }
+        ports {
+          container_port = 3000
+        }
+        env {
+          name  = "DATABASE_URL"
+          value = var.database_url
+        }
+        env {
+          name  = "SUPABASE_URL"
+          value = var.supabase_url
+        }
+        env {
+          name  = "SUPABASE_ANON_KEY"
+          value = var.supabase_anon_key
+        }
+        env {
+          name  = "LIVEKIT_API_KEY"
+          value = var.livekit_api_key
+        }
+        env {
+          name  = "LIVEKIT_API_SECRET"
+          value = var.livekit_secret
+        }
+        env {
+          name  = "LIVEKIT_URL"
+          value = var.livekit_url
+        }
+        env {
+          name  = "OPENAI_API_KEY"
+          value = var.openai_api_key
+        }
+        env {
+          name  = "OPENROUTER_API_KEY"
+          value = var.openrouter_api_key
+        }
+        env {
+          name  = "ANTHROPIC_API_KEY"
+          value = var.anthropic_api_key
+        }
+        env {
+          name  = "GOOGLE_API_KEY"
+          value = var.google_api_key
+        }
+        env {
+          name  = "GOOGLE_GENERATIVE_AI_API_KEY"
+          value = var.google_generative_ai_api_key
+        }
+        env {
+          name  = "NODE_ENV"
+          value = "production"
+        }
+      }
+    }
+  }
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+}
+
+resource "google_cloud_run_service_iam_member" "nextjs_server_noauth" {
+  service  = google_cloud_run_service.nextjs_server.name
+  location = google_cloud_run_service.nextjs_server.location
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }
