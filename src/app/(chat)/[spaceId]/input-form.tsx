@@ -31,11 +31,6 @@ export default function InputForm(props: InputFormProps) {
     },
   });
 
-  useEffect(() => {
-    // Set the default model from the atom when the component mounts
-    form.setValue("model", selectedModel);
-  }, [selectedModel, form]);
-
   const onModelChange = (value: string) => {
     if (!value) {
       console.warn("No model selected");

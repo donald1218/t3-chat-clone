@@ -43,8 +43,7 @@ export default function ModelSelect({
             className="hover:bg-accent/30"
           >
             {selectedModel
-              ? getModelById(selectedModel.split(":")[1])?.name ??
-                "Select model"
+              ? getModelById(selectedModel)?.name ?? "Select model"
               : "Select model"}
           </Button>
         </FormControl>
@@ -75,10 +74,10 @@ export default function ModelSelect({
                 >
                   {(models as ModelType[]).map((model: ModelType) => (
                     <CommandItem
-                      key={`${model.provider}:${model.id}`}
-                      value={`${model.provider}:${model.id}`}
+                      key={model.id}
+                      value={model.id}
                       onSelect={() => {
-                        onModelChange(`${model.provider}:${model.id}`);
+                        onModelChange(model.id);
                         setSearchTerm(""); // Clear search term after selection
                       }}
                     >
