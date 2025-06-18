@@ -29,11 +29,14 @@ async def entrypoint(ctx: JobContext):
 
     
     _google_api_key = os.getenv("GOOGLE_API_KEY")
-    _first_participant = list(ctx.room.remote_participants.values())[0]
-    _chosen_model = _first_participant.attributes["model"]
-    if _chosen_model is None:
-        _chosen_model = "gemma-3-27b-it"
-        
+    _chosen_model = "gemma-3-27b-it" # default model
+
+    _participants = list(ctx.room.remote_participants.values())
+    if len(_participants) > 0:
+        # Use the model selection of the first participant
+        _first_participant = list(ctx.room.remote_participants.values())[0]
+        _chosen_model = _first_participant.attributes["model"]
+
     await session.start(
         room=ctx.room,
         agent=Agent(
