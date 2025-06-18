@@ -56,11 +56,14 @@ export async function POST(req: Request) {
     system: space?.prompt || "You are a helpful t3 chat assistant.",
     messages,
     async onFinish({ response, usage }) {
-      await updateThread(id, {
-        messages: appendResponseMessages({
-          messages,
-          responseMessages: response.messages,
-        }),
+      await updateThread({
+        threadId: id,
+        updates: {
+          messages: appendResponseMessages({
+            messages,
+            responseMessages: response.messages,
+          }),
+        },
       });
 
       const lastResponseMessage =
