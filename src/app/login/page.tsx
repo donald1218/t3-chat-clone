@@ -157,7 +157,7 @@ export default function LoginPage() {
 
       <Button
         onClick={() => signInWithGithub({ origin: window.location.origin })}
-        className="w-full bg-[#181717]"
+        className="w-full bg-[#181717] dark:text-foreground dark:hover:bg-accent dark:border-accent dark:border-2"
       >
         <svg
           role="img"
